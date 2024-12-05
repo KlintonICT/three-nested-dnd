@@ -130,61 +130,49 @@ const MyDND = () => {
     const overId = over?.id;
     const activeId = active?.id;
 
-    // if the draggable type is subprocess move the subprocess to the new process container
     const overContainer = findProcessContainerBySubProcessId(overId);
     const activeContainer = findProcessContainerBySubProcessId(activeId);
 
-    console.log('Drag Over: ', { overContainer, activeContainer });
-
     if (!overContainer || !activeContainer) {
-      console.log('Drag Over: ', 'No container found');
       return;
     }
 
     if (activeContainer !== overContainer) {
-      setData((prevData) => {
-        const clonedData = [...prevData];
+      const clonedData = [...data];
+      // Find indices of containers in the cloned data
+      const overContainerIndex = clonedData.findIndex((item) => item.id === overContainer.id);
+      const activeContainerIndex = clonedData.findIndex((item) => item.id === activeContainer.id);
 
-        // Find indices of containers in the cloned data
-        const overContainerIndex = clonedData.findIndex((item) => item.id === overContainer.id);
-        const activeContainerIndex = clonedData.findIndex((item) => item.id === activeContainer.id);
+      if (overContainerIndex === -1 || activeContainerIndex === -1) {
+        return;
+      }
 
-        if (overContainerIndex === -1 || activeContainerIndex === -1) {
-          console.log('Drag Over: ', 'Container indices not found');
-          return prevData; // Return the original data to avoid breaking state
-        }
+      // Get references to `subs` for both containers
+      const activeSubProcessItems = clonedData[activeContainerIndex].subs || [];
+      const overSubProcessItems = clonedData[overContainerIndex].subs || [];
 
-        // Get references to `subs` for both containers
-        const activeSubProcessItems = clonedData[activeContainerIndex].subs || [];
-        const overSubProcessItems = clonedData[overContainerIndex].subs || [];
+      // Find the indices of the active and over subprocesses
+      const activeIndex = activeSubProcessItems.findIndex((item) => item.id === activeId);
+      const overIndex = overSubProcessItems.findIndex((item) => item.id === overId);
 
-        // Find the indices of the active and over subprocesses
-        const activeIndex = activeSubProcessItems.findIndex((item) => item.id === activeId);
-        const overIndex = overSubProcessItems.findIndex((item) => item.id === overId);
+      // Active subprocess not found in its container
+      if (activeIndex === -1) {
+        return;
+      }
 
-        if (activeIndex === -1) {
-          console.log('Drag Over: ', 'Active subprocess not found in its container');
-          return prevData;
-        }
+      const lastIndex = overSubProcessItems.length;
+      const newIndex = findNewIndex({ over, active, overIndex, lastIndex });
 
-        const lastIndex = overSubProcessItems.length;
-        const newIndex = findNewIndex({ over, active, overIndex, lastIndex });
+      const [activeSubProcess] = activeSubProcessItems.splice(activeIndex, 1);
+      clonedData[overContainerIndex].subs = [
+        ...overSubProcessItems.slice(0, newIndex),
+        activeSubProcess,
+        ...overSubProcessItems.slice(newIndex, lastIndex),
+      ];
 
-        // Remove the active subprocess from its current container
-        const [activeSubProcess] = activeSubProcessItems.splice(activeIndex, 1);
+      clonedData[activeContainerIndex].subs = activeSubProcessItems;
 
-        // Add the active subprocess to the new container at the calculated index
-        clonedData[overContainerIndex].subs = [
-          ...overSubProcessItems.slice(0, newIndex),
-          activeSubProcess,
-          ...overSubProcessItems.slice(newIndex, lastIndex),
-        ];
-
-        // Update the subs of the active container
-        clonedData[activeContainerIndex].subs = activeSubProcessItems;
-
-        return clonedData;
-      });
+      setData(clonedData);
     }
   };
 
@@ -478,13 +466,6 @@ const MyDND = () => {
     const overProcessContainer = findProcessContainerByActivityId(over?.id);
     const activeProcessContainer = findProcessContainerByActivityId(active?.id);
 
-    console.log('All Container: ', {
-      overSubprocessContainer,
-      activeSubprocessContainer,
-      overProcessContainer,
-      activeProcessContainer,
-    });
-
     if (overSubprocessContainer && activeSubprocessContainer) {
       handleDragOverActivityFromSubProcessToSubProcess({
         active,
@@ -514,9 +495,8 @@ const MyDND = () => {
   const onDragOver = ({ active, over }) => {
     if (over?.id == null || active?.id == null) return;
 
-    console.log('Drag Over: ', { active, over });
-
     if (active.data.current.type === 'subprocess') {
+      // Drag the subprocess to drop in different process container
       handleDragOverSubProcess({ active, over });
     } else if (active.data.current.type === 'activity') {
       handleDragOverActivity({ active, over });
