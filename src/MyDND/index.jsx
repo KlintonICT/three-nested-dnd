@@ -46,10 +46,10 @@ const MyDND = () => {
     if (active.data.current.type === 'activity') {
       for (const process of data) {
         const _activeActivity = process?.activities?.find((act) => act.id === active.id);
-          if (_activeActivity) {
-            setActiveActivity(_activeActivity);
-            return;
-          }
+        if (_activeActivity) {
+          setActiveActivity(_activeActivity);
+          return;
+        }
 
         for (const sub of process.subs) {
           const _activeActivity = sub?.activities?.find((act) => act.id === active.id);
@@ -86,7 +86,8 @@ const MyDND = () => {
   const findSubProcessContainerByActivityId = (activityId) => {
     for (const process of data) {
       for (const sub of process.subs) {
-        if (activityId === sub.id) return sub;
+        // priority to sub process if both sub and process is empty
+        if (sub?.activities.length === 0 && activityId === sub.id) return sub;
 
         const matchingActivity = sub?.activities?.find((act) => act.id === activityId);
 
@@ -99,11 +100,20 @@ const MyDND = () => {
 
   const findProcessContainerByActivityId = (activityId) => {
     for (const process of data) {
+      // when process container is empty activityId turn to be process id
       if (activityId === process.id) return process;
 
       const matchingActivity = process?.activities?.find((act) => act.id === activityId);
 
       if (matchingActivity) return process;
+
+      for (const sub of process.subs) {
+        if (sub.id === activityId) return process;
+
+        const matchingActivity = sub?.activities?.find((act) => act.id === activityId);
+
+        if (matchingActivity) return process;
+      }
     }
 
     return null;
@@ -343,82 +353,85 @@ const MyDND = () => {
     });
   };
 
-  // const handleDragOverActivityFromSubProcessToProcess = ({
-  //   active,
-  //   over,
-  //   activeProcessContainer,
-  //   overSubprocessContainer,
-  // }) => {
-  //   console.log('Act of Process ==> Sub Process: ', {
-  //     active,
-  //     over,
-  //     activeProcessContainer,
-  //     overSubprocessContainer,
-  //   });
-  //   const overId = over?.id;
-  //   const activeId = active?.id;
+  const handleDragOverActivityFromSubProcessToProcess = ({
+    active,
+    over,
+    activeSubprocessContainer,
+    overProcessContainer,
+  }) => {
+    console.log('Act of Sub Process ==> Process: ', {
+      active,
+      over,
+      activeSubprocessContainer,
+      overProcessContainer,
+    });
+    const overId = over?.id;
+    const activeId = active?.id;
 
-  //   let overProcessContainer = over.data.current.processContainer;
+    const activeProcessContainerId = active.data.current.processContainer;
 
-  //   if (!overProcessContainer) {
-  //     const findOverProcessContainer = findProcessContainerBySubProcessId(overSubprocessContainer.id);
+    setData((prevData) => {
+      const activeActivityItems = activeSubprocessContainer?.activities || [];
+      const overActivityItems = overProcessContainer?.activities || [];
 
-  //     if (!findOverProcessContainer) {
-  //       console.log('Drag Over: ', 'No over process container found');
-  //     }
+      const activeIndex = activeActivityItems.findIndex((item) => item.id === activeId);
+      const overIndex = overActivityItems.findIndex((item) => item.id === overId);
 
-  //     overProcessContainer = findOverProcessContainer.id;
-  //   }
+      if (activeIndex === -1) {
+        console.log('Drag Over: ', 'Active Activity not found in its subprocess container');
+        return prevData;
+      }
 
-  //   setData((prevData) => {
-  //     const activeActivityItems = activeProcessContainer?.activities || [];
-  //     const overActivityItems = overSubprocessContainer?.activities || [];
+      const isBelowOverItem =
+        over && active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height;
+      const modifier = isBelowOverItem ? 1 : 0;
+      const newIndex = overIndex >= 0 ? overIndex + modifier : overActivityItems.length;
 
-  //     const activeIndex = activeActivityItems.findIndex((item) => item.id === activeId);
-  //     const overIndex = overActivityItems.findIndex((item) => item.id === overId);
+      const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
+      const newOverActivityItems = [
+        ...overActivityItems.slice(0, newIndex),
+        activeActivity,
+        ...overActivityItems.slice(newIndex, overActivityItems.length),
+      ];
 
-  //     if (activeIndex === -1) {
-  //       console.log('Drag Over: ', 'Active Activity not found in its process container');
-  //       return prevData;
-  //     }
+      const clonedData = [...prevData];
 
-  //     const isBelowOverItem =
-  //       over && active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height;
-  //     const modifier = isBelowOverItem ? 1 : 0;
-  //     const newIndex = overIndex >= 0 ? overIndex + modifier : overActivityItems.length;
+      const newData = clonedData.map((process) => {
+        if (process.id === activeProcessContainerId) {
+          process = {
+            ...process,
+            subs: process.subs.map((sub) =>
+              sub.id === activeSubprocessContainer.id ? { ...sub, activities: activeActivityItems } : sub
+            ),
+          };
+        }
+        if (process.id === overProcessContainer.id) {
+          process = {
+            ...process,
+            activities: newOverActivityItems,
+          };
+        }
+        return process;
+      });
 
-  //     const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
-  //     const newOverActivityItems = [
-  //       ...overActivityItems.slice(0, newIndex),
-  //       activeActivity,
-  //       ...overActivityItems.slice(newIndex, overActivityItems.length),
-  //     ];
-
-  //     const clonedData = [...prevData];
-
-  //     const newData = clonedData.map((process) => {
-  //       if (process.id === overProcessContainer) {
-  //         process = {
-  //           ...process,
-  //           subs: process.subs.map((sub) =>
-  //             sub.id === overSubprocessContainer.id ? { ...sub, activities: newOverActivityItems } : sub
-  //           ),
-  //         };
-  //       }
-  //       return process;
-  //     });
-
-  //     return newData;
-  //   });
-  // };
+      return newData;
+    });
+  };
 
   const handleDragOverActivity = ({ active, over }) => {
     const overSubprocessContainer = findSubProcessContainerByActivityId(over?.id);
     const activeSubprocessContainer = findSubProcessContainerByActivityId(active?.id);
-    // const overProcessContainer = findProcessContainerByActivityId(over?.id);
+    const overProcessContainer = findProcessContainerByActivityId(over?.id);
     const activeProcessContainer = findProcessContainerByActivityId(active?.id);
 
-    console.log({ overSubprocessContainer, activeSubprocessContainer });
+    console.log('Test ===>', {
+      active: active.id,
+      over: over.id,
+      overSubprocessContainer,
+      activeSubprocessContainer,
+      overProcessContainer,
+      activeProcessContainer,
+    });
 
     if (overSubprocessContainer && activeSubprocessContainer) {
       handleDragOverActivityFromSubProcessToSubProcess({
@@ -429,6 +442,13 @@ const MyDND = () => {
       });
     } else if (activeProcessContainer && overSubprocessContainer) {
       handleDragOverActivityFromProcessToSubProcess({ active, over, activeProcessContainer, overSubprocessContainer });
+    } else if (activeSubprocessContainer && overProcessContainer) {
+      handleDragOverActivityFromSubProcessToProcess({
+        active,
+        over,
+        activeSubprocessContainer,
+        overProcessContainer,
+      });
     }
   };
 
@@ -591,15 +611,15 @@ const MyDND = () => {
           <ProcessDroppableContainer key={process.id} processId={process.id}>
             <h1 className='font-bold text-white text-xl'>{process.name}</h1>
 
-            <SortableContext strategy={verticalListSortingStrategy} items={process.activities?.map((a) => a.id)}>
-              <table className='w-full'>
-                <thead>
-                  <tr className='text-white text-sm font-semibold bg-[#1B2150]'>
-                    <th className='text-left w-1/2 p-3'>ID</th>
-                    <th className='text-left'>Name</th>
-                  </tr>
-                </thead>
+            <table className='w-full'>
+              <thead>
+                <tr className='text-white text-sm font-semibold bg-[#1B2150]'>
+                  <th className='text-left w-1/2 p-3'>ID</th>
+                  <th className='text-left'>Name</th>
+                </tr>
+              </thead>
 
+              <SortableContext strategy={verticalListSortingStrategy} items={process.activities?.map((a) => a.id)}>
                 {process?.activities?.length > 0 && (
                   <tbody>
                     {process.activities?.map((activity) => (
@@ -607,8 +627,8 @@ const MyDND = () => {
                     ))}
                   </tbody>
                 )}
-              </table>
-            </SortableContext>
+              </SortableContext>
+            </table>
 
             <SortableContext strategy={verticalListSortingStrategy} items={process?.subs?.map((s) => s.id)}>
               <div className='flex flex-col gap-3 mt-3'>

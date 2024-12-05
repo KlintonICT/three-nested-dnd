@@ -1,17 +1,10 @@
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const ActivityItem = ({ data, processId }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: data?.id,
-    data: { type: "activity", processContainer: processId },
+    data: { type: 'activity', processContainer: processId },
   });
 
   return (
@@ -24,9 +17,9 @@ const ActivityItem = ({ data, processId }) => {
         transition,
         opacity: isDragging ? 0.2 : 1,
       }}
-      className="bg-[#232A67] text-sm text-white cursor-grab"
+      className='bg-[#232A67] text-sm text-white cursor-grab'
     >
-      <td className="p-3 w-1/2">{data?.id}</td>
+      <td className='p-3 w-1/2'>{data?.id}</td>
       <td>{data?.name}</td>
     </tr>
   );
