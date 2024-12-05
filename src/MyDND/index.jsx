@@ -199,8 +199,8 @@ const MyDND = () => {
     const overId = over?.id;
     const activeId = active?.id;
 
-    const activeProcessContainer = active.data.current.processContainer;
-    let overProcessContainer = over.data.current.processContainer;
+    const activeProcessContainer = active.data.current.processContainerId;
+    let overProcessContainer = over.data.current.processContainerId;
 
     if (!activeProcessContainer) {
       console.log('Drag Over: ', 'No active process container found');
@@ -298,7 +298,7 @@ const MyDND = () => {
     const overId = over?.id;
     const activeId = active?.id;
 
-    let overProcessContainer = over.data.current.processContainer;
+    let overProcessContainer = over.data.current.processContainerId;
 
     if (!overProcessContainer) {
       const findOverProcessContainer = findProcessContainerBySubProcessId(overSubprocessContainer.id);
@@ -370,7 +370,7 @@ const MyDND = () => {
     const overId = over?.id;
     const activeId = active?.id;
 
-    const activeProcessContainerId = active.data.current.processContainer;
+    const activeProcessContainerId = active.data.current.processContainerId;
 
     const activeActivityItems = activeSubprocessContainer?.activities || [];
     const overActivityItems = overProcessContainer?.activities || [];
@@ -597,7 +597,7 @@ const MyDND = () => {
     if (overSubProcessContainer && activeSubProcessContainer) {
       // sort activity item under sub process container
       const clonedData = [...data];
-      const overProcessContainerId = over.data.current.processContainer;
+      const overProcessContainerId = over.data.current.processContainerId;
 
       const activeActivityItems = activeSubProcessContainer?.activities || [];
       const overActivityItems = overSubProcessContainer?.activities || [];

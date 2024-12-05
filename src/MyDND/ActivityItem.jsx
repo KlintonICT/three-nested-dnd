@@ -4,7 +4,7 @@ import { CSS } from '@dnd-kit/utilities';
 const ActivityItem = ({ data, processId }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: data?.id,
-    data: { type: 'activity', processContainer: processId },
+    data: { type: 'activity', processContainerId: processId },
   });
 
   return (
