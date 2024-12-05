@@ -118,6 +118,14 @@ const MyDND = () => {
     return null;
   };
 
+  const findNewIndex = ({ over, active, overIndex, lastIndex }) => {
+    const isBelowOverItem =
+      over && active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height;
+    const modifier = isBelowOverItem ? 1 : 0;
+
+    return overIndex >= 0 ? overIndex + modifier : lastIndex;
+  };
+
   const handleDragOverSubProcess = ({ active, over }) => {
     const overId = over?.id;
     const activeId = active?.id;
@@ -159,12 +167,7 @@ const MyDND = () => {
           return prevData;
         }
 
-        const isBelowOverItem =
-          over &&
-          active.rect.current.translated &&
-          active.rect.current.translated.top > over.rect.top + over.rect.height;
-        const modifier = isBelowOverItem ? 1 : 0;
-        const newIndex = overIndex >= 0 ? overIndex + modifier : overSubProcessItems.length; // Place at the end if not found
+        const newIndex = findNewIndex({ over, active, overIndex, lastIndex: overSubProcessItems.length });
 
         // Remove the active subprocess from its current container
         const [activeSubProcess] = activeSubProcessItems.splice(activeIndex, 1);
@@ -236,12 +239,7 @@ const MyDND = () => {
           return prevData;
         }
 
-        const isBelowOverItem =
-          over &&
-          active.rect.current.translated &&
-          active.rect.current.translated.top > over.rect.top + over.rect.height;
-        const modifier = isBelowOverItem ? 1 : 0;
-        const newIndex = overIndex >= 0 ? overIndex + modifier : overActivityItems.length;
+        const newIndex = findNewIndex({ over, active, overIndex, lastIndex: overActivityItems.length });
 
         const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
         const newOverActivityItems = [
@@ -324,10 +322,7 @@ const MyDND = () => {
       return;
     }
 
-    const isBelowOverItem =
-      over && active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height;
-    const modifier = isBelowOverItem ? 1 : 0;
-    const newIndex = overIndex >= 0 ? overIndex + modifier : overActivityItems.length;
+    const newIndex = findNewIndex({ over, active, overIndex, lastIndex: overActivityItems.length });
 
     const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
     const newOverActivityItems = [
@@ -383,10 +378,7 @@ const MyDND = () => {
       return;
     }
 
-    const isBelowOverItem =
-      over && active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height;
-    const modifier = isBelowOverItem ? 1 : 0;
-    const newIndex = overIndex >= 0 ? overIndex + modifier : overActivityItems.length;
+    const newIndex = findNewIndex({ over, active, overIndex, lastIndex: overActivityItems.length });
 
     const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
     const newOverActivityItems = [
@@ -449,10 +441,7 @@ const MyDND = () => {
       return;
     }
 
-    const isBelowOverItem =
-      over && active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height;
-    const modifier = isBelowOverItem ? 1 : 0;
-    const newIndex = overIndex >= 0 ? overIndex + modifier : overActivityItems.length;
+    const newIndex = findNewIndex({ over, active, overIndex, lastIndex: overActivityItems.length });
 
     const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
     const newOverActivityItems = [
