@@ -418,6 +418,68 @@ const MyDND = () => {
     });
   };
 
+  const handleDragOverActivityFromProcessToProcess = ({
+    over,
+    active,
+    overProcessContainer,
+    activeProcessContainer,
+  }) => {
+    console.log('Act of Process ==> Process: ', {
+      over,
+      active,
+      overProcessContainer,
+      activeProcessContainer,
+    });
+
+    const overId = over?.id;
+    const activeId = active?.id;
+
+    setData((prevData) => {
+      const activeActivityItems = activeProcessContainer?.activities || [];
+      const overActivityItems = overProcessContainer?.activities || [];
+
+      const activeIndex = activeActivityItems.findIndex((item) => item.id === activeId);
+      const overIndex = overActivityItems.findIndex((item) => item.id === overId);
+
+      if (activeIndex === -1) {
+        console.log('Drag Over: ', 'Active Activity not found in its process container');
+        return prevData;
+      }
+
+      const isBelowOverItem =
+        over && active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height;
+      const modifier = isBelowOverItem ? 1 : 0;
+      const newIndex = overIndex >= 0 ? overIndex + modifier : overActivityItems.length;
+
+      const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
+      const newOverActivityItems = [
+        ...overActivityItems.slice(0, newIndex),
+        activeActivity,
+        ...overActivityItems.slice(newIndex, overActivityItems.length),
+      ];
+
+      const clonedData = [...prevData];
+
+      const newData = clonedData.map((process) => {
+        if (process.id === activeProcessContainer.id) {
+          process = {
+            ...process,
+            activities: activeActivityItems,
+          };
+        }
+        if (process.id === overProcessContainer.id) {
+          process = {
+            ...process,
+            activities: newOverActivityItems,
+          };
+        }
+        return process;
+      });
+
+      return newData;
+    });
+  };
+
   const handleDragOverActivity = ({ active, over }) => {
     const overSubprocessContainer = findSubProcessContainerByActivityId(over?.id);
     const activeSubprocessContainer = findSubProcessContainerByActivityId(active?.id);
@@ -447,6 +509,13 @@ const MyDND = () => {
         active,
         over,
         activeSubprocessContainer,
+        overProcessContainer,
+      });
+    } else if (activeProcessContainer && overProcessContainer) {
+      handleDragOverActivityFromProcessToProcess({
+        active,
+        over,
+        activeProcessContainer,
         overProcessContainer,
       });
     }
@@ -596,11 +665,11 @@ const MyDND = () => {
     <DndContext
       sensors={sensors}
       collisionDetection={closestCorners}
-      measuring={{
-        droppable: {
-          strategy: MeasuringStrategy.Always,
-        },
-      }}
+      // measuring={{
+      //   droppable: {
+      //     strategy: MeasuringStrategy.Always,
+      //   },
+      // }}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDragEnd={onDragEnd}
