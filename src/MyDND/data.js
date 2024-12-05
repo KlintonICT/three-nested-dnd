@@ -30,7 +30,10 @@ export const initData = [
       {
         id: "s3",
         name: "Subprocess 3",
-        activities: [{ id: "a6", name: "Activity 6" }],
+        activities: [
+          { id: "a6", name: "Activity 6" },
+          { id: "a61", name: "Activity 61" },
+        ],
       },
       {
         id: "s4",

@@ -11,7 +11,7 @@ const ActivityItem = ({ data, processId }) => {
     isDragging,
   } = useSortable({
     id: data?.id,
-    data: { type: "activity", container: processId },
+    data: { type: "activity", processContainer: processId },
   });
 
   return (
@@ -22,7 +22,7 @@ const ActivityItem = ({ data, processId }) => {
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
-        opacity: isDragging ? 0.5 : 1,
+        opacity: isDragging ? 0.2 : 1,
       }}
       className="bg-[#232A67] text-sm text-white cursor-grab"
     >

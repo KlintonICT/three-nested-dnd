@@ -27,6 +27,9 @@ const MyDND = () => {
   const [data, setData] = useState(initData);
   // const [clonedData, setClonedData] = useState(null);
   const [activeSubProcess, setActiveSubProcess] = useState();
+  const [activeActivity, setActiveActivity] = useState();
+
+  console.log("Test: ", activeActivity);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -44,17 +47,25 @@ const MyDND = () => {
       );
       setActiveSubProcess(_activeSubProcess);
     }
+    if (active.data.current.type === "activity") {
+      const subProcessContainer = findSubProcessContainerByActivityId(
+        active.id,
+      );
+      const _activeActivity = subProcessContainer?.activities?.find(
+        (act) => act.id === active.id,
+      );
+      setActiveActivity(_activeActivity);
+    }
   };
-
-  // const onDragEnd = ({ active, over }) => {};
 
   const onDragCancel = () => {
     setActiveSubProcess(null);
+    setActiveActivity(null);
   };
 
   const findProcessContainerBySubProcessId = (subProcessId) => {
     for (const process of data) {
-      // not able to move process to single process 1
+      // not able to move process to single process
       if (subProcessId === "single") return null;
 
       // when process container is empty subprocessId turn to be process id
@@ -70,6 +81,22 @@ const MyDND = () => {
     return null;
   };
 
+  const findSubProcessContainerByActivityId = (activityId) => {
+    for (const process of data) {
+      for (const sub of process.subs) {
+        if (activityId === sub.id) return sub;
+
+        const matchingActivity = sub?.activities?.find(
+          (act) => act.id === activityId,
+        );
+
+        if (matchingActivity) return sub;
+      }
+    }
+
+    return null;
+  };
+
   const onDragOver = ({ active, over }) => {
     const overId = over?.id;
     const activeId = active?.id;
@@ -79,6 +106,7 @@ const MyDND = () => {
     console.log("Drag Over: ", { active, over });
 
     if (active.data.current.type === "subprocess") {
+      // if the draggable type is subprocess move the subprocess to the new process container
       const overContainer = findProcessContainerBySubProcessId(overId);
       const activeContainer = findProcessContainerBySubProcessId(activeId);
 
@@ -155,6 +183,118 @@ const MyDND = () => {
           return clonedData;
         });
       }
+    } else if (active.data.current.type === "activity") {
+      // if the draggable type is activity move the activity to the new subprocess container
+      const overSubprocessContainer =
+        findSubProcessContainerByActivityId(overId);
+      const activeSubprocessContainer =
+        findSubProcessContainerByActivityId(activeId);
+
+      console.log({ overSubprocessContainer, activeSubprocessContainer });
+
+      if (!overSubprocessContainer || !activeSubprocessContainer) {
+        console.log("Drag Over: ", "No container found");
+        return;
+      }
+
+      const activeProcessContainer = active.data.current.processContainer;
+      let overProcessContainer = over.data.current.processContainer;
+
+      if (!activeProcessContainer) {
+        console.log("Drag Over: ", "No active process container found");
+        return;
+      }
+
+      if (!overProcessContainer) {
+        const findOverProcessContainer = findProcessContainerBySubProcessId(
+          overSubprocessContainer.id,
+        );
+
+        if (!findOverProcessContainer) {
+          console.log("Drag Over: ", "No over process container found");
+        }
+
+        overProcessContainer = findOverProcessContainer.id;
+      }
+
+      console.log({ activeProcessContainer, overProcessContainer });
+
+      if (overSubprocessContainer !== activeSubprocessContainer) {
+        setData((prevData) => {
+          const activeActivityItems =
+            activeSubprocessContainer?.activities || [];
+          const overActivityItems = overSubprocessContainer?.activities || [];
+
+          console.log({ activeActivityItems, overActivityItems });
+
+          const activeIndex = activeActivityItems.findIndex(
+            (item) => item.id === activeId,
+          );
+          const overIndex = overActivityItems.findIndex(
+            (item) => item.id === overId,
+          );
+
+          console.log({ activeIndex, overIndex });
+
+          if (activeIndex === -1) {
+            console.log(
+              "Drag Over: ",
+              "Active Activity not found in its container",
+            );
+            return prevData;
+          }
+
+          const isBelowOverItem =
+            over &&
+            active.rect.current.translated &&
+            active.rect.current.translated.top >
+              over.rect.top + over.rect.height;
+          const modifier = isBelowOverItem ? 1 : 0;
+          const newIndex =
+            overIndex >= 0 ? overIndex + modifier : overActivityItems.length;
+
+          const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
+          const newOverActivityItems = [
+            ...overActivityItems.slice(0, newIndex),
+            activeActivity,
+            ...overActivityItems.slice(newIndex, overActivityItems.length),
+          ];
+
+          console.log({
+            activeActivityItems,
+            activeActivity,
+            newOverActivityItems,
+          });
+
+          const clonedData = [...prevData];
+
+          const newData = clonedData.map((process) => {
+            if (process.id === activeProcessContainer) {
+              process = {
+                ...process,
+                subs: process.subs.map((sub) =>
+                  sub.id === activeSubprocessContainer.id
+                    ? { ...sub, activities: activeActivityItems }
+                    : sub,
+                ),
+              };
+            }
+            if (process.id === overProcessContainer) {
+              process = {
+                ...process,
+                subs: process.subs.map((sub) =>
+                  sub.id === overSubprocessContainer.id
+                    ? { ...sub, activities: newOverActivityItems }
+                    : sub,
+                ),
+              };
+            }
+            return process;
+          });
+
+          return newData;
+        });
+      }
     }
   };
 
@@ -216,9 +356,69 @@ const MyDND = () => {
           setData(clonedData);
         }
       }
-    }
+    } else if (active.data.current.type === "activity") {
+      console.log("Activity Drag End");
+      const activeSubProcessContainer = findSubProcessContainerByActivityId(
+        active.id,
+      );
 
+      if (!activeSubProcessContainer) {
+        setActiveActivity(null);
+        return;
+      }
+
+      const overId = over?.id;
+
+      if (overId == null) {
+        setActiveActivity(null);
+        return;
+      }
+
+      const overSubProcessContainer =
+        findSubProcessContainerByActivityId(overId);
+      const overProcessContainer = over.data.current.processContainer;
+
+      if (overSubProcessContainer) {
+        const clonedData = [...data];
+
+        const activeActivityItems = activeSubProcessContainer?.activities || [];
+        const overActivityItems = overSubProcessContainer?.activities || [];
+
+        const activeIndex = activeActivityItems.findIndex(
+          (item) => item.id === activeId,
+        );
+        const overIndex = overActivityItems.findIndex(
+          (item) => item.id === overId,
+        );
+
+        if (activeIndex !== overIndex) {
+          const newData = clonedData.map((process) => {
+            if (process.id === overProcessContainer) {
+              process = {
+                ...process,
+                subs: process.subs.map((sub) =>
+                  sub.id === overSubProcessContainer.id
+                    ? {
+                        ...sub,
+                        activities: arrayMove(
+                          overActivityItems,
+                          activeIndex,
+                          overIndex,
+                        ),
+                      }
+                    : sub,
+                ),
+              };
+            }
+            return process;
+          });
+
+          setData(newData);
+        }
+      }
+    }
     setActiveSubProcess(null);
+    setActiveActivity(null);
   };
 
   return (
@@ -333,6 +533,13 @@ const MyDND = () => {
               </table>
             </SubProcessDroppableContainer>
           </SubProcessDraggableItem>
+        ) : null}
+        {activeActivity ? (
+          <table className="w-full">
+            <tbody>
+              <ActivityItem data={activeActivity} />
+            </tbody>
+          </table>
         ) : null}
       </DragOverlay>
     </DndContext>
