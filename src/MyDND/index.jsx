@@ -37,12 +37,13 @@ const MyDND = () => {
   );
 
   const onDragStart = ({ active }) => {
-    if (active.data.current.type === 'subprocess') {
+    const activeType = active.data.current.type;
+
+    if (activeType === 'subprocess') {
       const container = findProcessContainerBySubProcessId(active.id);
       const _activeSubProcess = container?.subs?.find((sub) => sub.id === active.id);
       setActiveSubProcess(_activeSubProcess);
-    }
-    if (active.data.current.type === 'activity') {
+    } else if (activeType === 'activity') {
       for (const process of data) {
         const _activeActivity = process?.activities?.find((act) => act.id === active.id);
         if (_activeActivity) {
@@ -67,16 +68,11 @@ const MyDND = () => {
   };
 
   const findProcessContainerBySubProcessId = (subProcessId) => {
+    // when subprocessId turn to be processId and have value=single, return null process container
+    if (subProcessId === 'single') return null;
+
     for (const process of data) {
-      // not able to move process to single process
-      if (subProcessId === 'single') return null;
-
-      // when process container is empty subprocessId turn to be process id
-      if (subProcessId === process.id) return process;
-
-      const matchingSubProcess = process?.subs?.find((sub) => sub.id === subProcessId);
-
-      if (matchingSubProcess) return process;
+      if (subProcessId === process.id || process?.subs?.some((sub) => sub.id === subProcessId)) return process;
     }
 
     return null;
@@ -85,12 +81,9 @@ const MyDND = () => {
   const findSubProcessContainerByActivityId = (activityId) => {
     for (const process of data) {
       for (const sub of process.subs) {
-        // when activity id turn to be sub process id, return the sub process only container if activity list is empty
-        if (sub?.activities.length === 0 && activityId === sub.id) return sub;
-
-        const matchingActivity = sub?.activities?.find((act) => act.id === activityId);
-
-        if (matchingActivity) return sub;
+        // when activity id turn to be sub process id, return the sub process only container of activity list is empty
+        const isFoundSubProcess = sub?.activities?.length === 0 && activityId === sub.id;
+        if (isFoundSubProcess || sub?.activities?.some((act) => act.id === activityId)) return sub;
       }
     }
 
@@ -99,19 +92,10 @@ const MyDND = () => {
 
   const findProcessContainerByActivityId = (activityId) => {
     for (const process of data) {
-      // when process container is empty activityId turn to be process id
-      if (activityId === process.id) return process;
-
-      const matchingActivity = process?.activities?.find((act) => act.id === activityId);
-
-      if (matchingActivity) return process;
+      if (activityId === process.id || process?.activities?.some((act) => act.id === activityId)) return process;
 
       for (const sub of process.subs) {
-        if (sub.id === activityId) return process;
-
-        const matchingActivity = sub?.activities?.find((act) => act.id === activityId);
-
-        if (matchingActivity) return process;
+        if (sub.id === activityId || sub?.activities?.some((act) => act.id === activityId)) return process;
       }
     }
 
@@ -127,9 +111,6 @@ const MyDND = () => {
 
   const findActiveAndOverItems = ({ over, active, activeList, overList }) => {
     const { activeIndex, overIndex } = findActiveAndOverIndex({ active, over, activeList, overList });
-
-    // Cannot find active index means that the container is lost focus
-    if (activeIndex === -1) return;
 
     const lastIndex = overList.length;
     const isBelowOverItem =
@@ -157,8 +138,6 @@ const MyDND = () => {
         activeList: activeContainer.subs || [],
         overList: overContainer.subs || [],
       });
-
-      if (!activeAndOverItems) return;
 
       const clonedData = [...data];
       const newData = clonedData.map((process) => {
@@ -193,15 +172,13 @@ const MyDND = () => {
     if (!activeProcessContainerId || !overProcessContainerId) return;
 
     // make sure active and over subprocess container is different
-    if (overSubprocessContainer !== activeSubprocessContainer) {
+    if (overSubprocessContainer.id !== activeSubprocessContainer.id) {
       const activeOverItems = findActiveAndOverItems({
         active,
         over,
         activeList: activeSubprocessContainer?.activities || [],
         overList: overSubprocessContainer?.activities || [],
       });
-
-      if (!activeOverItems) return;
 
       const clonedData = [...data];
       const newData = clonedData.map((process) => {
@@ -249,8 +226,6 @@ const MyDND = () => {
       overList: overSubprocessContainer?.activities || [],
     });
 
-    if (!activeOverItems) return;
-
     const clonedData = [...data];
     const newData = clonedData.map((process) => {
       if (process.id === activeProcessContainer.id) {
@@ -287,8 +262,6 @@ const MyDND = () => {
       overList: overProcessContainer?.activities || [],
     });
 
-    if (!activeOverItems) return;
-
     const clonedData = [...data];
     const newData = clonedData.map((process) => {
       if (process.id === activeProcessContainerId) {
@@ -323,8 +296,6 @@ const MyDND = () => {
       activeList: activeProcessContainer?.activities || [],
       overList: overProcessContainer?.activities || [],
     });
-
-    if (!activeOverItems) return;
 
     const clonedData = [...data];
     const newData = clonedData.map((process) => {
