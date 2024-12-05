@@ -86,7 +86,7 @@ const MyDND = () => {
   const findSubProcessContainerByActivityId = (activityId) => {
     for (const process of data) {
       for (const sub of process.subs) {
-        // priority to sub process if both sub and process is empty
+        // when activity id turn to be sub process id, return the sub process only container if activity list is empty
         if (sub?.activities.length === 0 && activityId === sub.id) return sub;
 
         const matchingActivity = sub?.activities?.find((act) => act.id === activityId);
