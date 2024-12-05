@@ -343,6 +343,75 @@ const MyDND = () => {
     });
   };
 
+  // const handleDragOverActivityFromSubProcessToProcess = ({
+  //   active,
+  //   over,
+  //   activeProcessContainer,
+  //   overSubprocessContainer,
+  // }) => {
+  //   console.log('Act of Process ==> Sub Process: ', {
+  //     active,
+  //     over,
+  //     activeProcessContainer,
+  //     overSubprocessContainer,
+  //   });
+  //   const overId = over?.id;
+  //   const activeId = active?.id;
+
+  //   let overProcessContainer = over.data.current.processContainer;
+
+  //   if (!overProcessContainer) {
+  //     const findOverProcessContainer = findProcessContainerBySubProcessId(overSubprocessContainer.id);
+
+  //     if (!findOverProcessContainer) {
+  //       console.log('Drag Over: ', 'No over process container found');
+  //     }
+
+  //     overProcessContainer = findOverProcessContainer.id;
+  //   }
+
+  //   setData((prevData) => {
+  //     const activeActivityItems = activeProcessContainer?.activities || [];
+  //     const overActivityItems = overSubprocessContainer?.activities || [];
+
+  //     const activeIndex = activeActivityItems.findIndex((item) => item.id === activeId);
+  //     const overIndex = overActivityItems.findIndex((item) => item.id === overId);
+
+  //     if (activeIndex === -1) {
+  //       console.log('Drag Over: ', 'Active Activity not found in its process container');
+  //       return prevData;
+  //     }
+
+  //     const isBelowOverItem =
+  //       over && active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height;
+  //     const modifier = isBelowOverItem ? 1 : 0;
+  //     const newIndex = overIndex >= 0 ? overIndex + modifier : overActivityItems.length;
+
+  //     const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
+  //     const newOverActivityItems = [
+  //       ...overActivityItems.slice(0, newIndex),
+  //       activeActivity,
+  //       ...overActivityItems.slice(newIndex, overActivityItems.length),
+  //     ];
+
+  //     const clonedData = [...prevData];
+
+  //     const newData = clonedData.map((process) => {
+  //       if (process.id === overProcessContainer) {
+  //         process = {
+  //           ...process,
+  //           subs: process.subs.map((sub) =>
+  //             sub.id === overSubprocessContainer.id ? { ...sub, activities: newOverActivityItems } : sub
+  //           ),
+  //         };
+  //       }
+  //       return process;
+  //     });
+
+  //     return newData;
+  //   });
+  // };
+
   const handleDragOverActivity = ({ active, over }) => {
     const overSubprocessContainer = findSubProcessContainerByActivityId(over?.id);
     const activeSubprocessContainer = findSubProcessContainerByActivityId(active?.id);
@@ -432,10 +501,10 @@ const MyDND = () => {
     const activeSubProcessContainer = findSubProcessContainerByActivityId(activeId);
     const overSubProcessContainer = findSubProcessContainerByActivityId(overId);
     const activeProcessContainer = findProcessContainerByActivityId(activeId);
-    // const overProcessContainer = findProcessContainerByActivityId(overId);
+    const overProcessContainer = findProcessContainerByActivityId(overId);
 
     if (overSubProcessContainer && activeSubProcessContainer) {
-      // move activity from one sub process to another sub process
+      // sort activity item under sub process container
       const clonedData = [...data];
       const overProcessContainerId = over.data.current.processContainer;
 
@@ -465,13 +534,13 @@ const MyDND = () => {
 
         setData(newData);
       }
-    } else if (activeProcessContainer && overSubProcessContainer) {
-      // move activity from process to sub process
+    } else if (activeProcessContainer && overProcessContainer) {
+      // sort activity item under process container
       const clonedData = [...data];
-      const overProcessContainerId = over.data.current.processContainer;
+      const overProcessContainerId = overProcessContainer.id;
 
       const activeActivityItems = activeProcessContainer?.activities || [];
-      const overActivityItems = overSubProcessContainer?.activities || [];
+      const overActivityItems = overProcessContainer?.activities || [];
 
       const activeIndex = activeActivityItems.findIndex((item) => item.id === activeId);
       const overIndex = overActivityItems.findIndex((item) => item.id === overId);
