@@ -26,7 +26,7 @@ const ActivityItem = ({ data, processId }) => {
       }}
       className="bg-[#232A67] text-sm text-white cursor-grab"
     >
-      <td className="p-3">{data?.id}</td>
+      <td className="p-3 w-1/2">{data?.id}</td>
       <td>{data?.name}</td>
     </tr>
   );
