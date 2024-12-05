@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import {
-  closestCorners,
   DndContext,
   DragOverlay,
   KeyboardSensor,
-  MeasuringStrategy,
   PointerSensor,
   TouchSensor,
   useSensor,
   useSensors,
+  pointerWithin,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -311,30 +310,33 @@ const MyDND = () => {
       overProcessContainer = findOverProcessContainer.id;
     }
 
+    const activeActivityItems = activeProcessContainer?.activities || [];
+    const overActivityItems = overSubprocessContainer?.activities || [];
+
+    const activeIndex = activeActivityItems.findIndex((item) => item.id === activeId);
+    const overIndex = overActivityItems.findIndex((item) => item.id === overId);
+
+    if (activeIndex === -1) {
+      console.log(
+        'Drag Over: ',
+        'Active Activity not found in its process container (scope process to sub)' + overIndex
+      );
+      return;
+    }
+
+    const isBelowOverItem =
+      over && active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height;
+    const modifier = isBelowOverItem ? 1 : 0;
+    const newIndex = overIndex >= 0 ? overIndex + modifier : overActivityItems.length;
+
+    const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
+    const newOverActivityItems = [
+      ...overActivityItems.slice(0, newIndex),
+      activeActivity,
+      ...overActivityItems.slice(newIndex, overActivityItems.length),
+    ];
+
     setData((prevData) => {
-      const activeActivityItems = activeProcessContainer?.activities || [];
-      const overActivityItems = overSubprocessContainer?.activities || [];
-
-      const activeIndex = activeActivityItems.findIndex((item) => item.id === activeId);
-      const overIndex = overActivityItems.findIndex((item) => item.id === overId);
-
-      if (activeIndex === -1) {
-        console.log('Drag Over: ', 'Active Activity not found in its process container');
-        return prevData;
-      }
-
-      const isBelowOverItem =
-        over && active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height;
-      const modifier = isBelowOverItem ? 1 : 0;
-      const newIndex = overIndex >= 0 ? overIndex + modifier : overActivityItems.length;
-
-      const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
-      const newOverActivityItems = [
-        ...overActivityItems.slice(0, newIndex),
-        activeActivity,
-        ...overActivityItems.slice(newIndex, overActivityItems.length),
-      ];
-
       const clonedData = [...prevData];
 
       const newData = clonedData.map((process) => {
@@ -370,30 +372,30 @@ const MyDND = () => {
 
     const activeProcessContainerId = active.data.current.processContainer;
 
+    const activeActivityItems = activeSubprocessContainer?.activities || [];
+    const overActivityItems = overProcessContainer?.activities || [];
+
+    const activeIndex = activeActivityItems.findIndex((item) => item.id === activeId);
+    const overIndex = overActivityItems.findIndex((item) => item.id === overId);
+
+    if (activeIndex === -1) {
+      console.log('Drag Over: ', 'Active Activity not found in its subprocess container (scope sub to process)');
+      return;
+    }
+
+    const isBelowOverItem =
+      over && active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height;
+    const modifier = isBelowOverItem ? 1 : 0;
+    const newIndex = overIndex >= 0 ? overIndex + modifier : overActivityItems.length;
+
+    const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
+    const newOverActivityItems = [
+      ...overActivityItems.slice(0, newIndex),
+      activeActivity,
+      ...overActivityItems.slice(newIndex, overActivityItems.length),
+    ];
+
     setData((prevData) => {
-      const activeActivityItems = activeSubprocessContainer?.activities || [];
-      const overActivityItems = overProcessContainer?.activities || [];
-
-      const activeIndex = activeActivityItems.findIndex((item) => item.id === activeId);
-      const overIndex = overActivityItems.findIndex((item) => item.id === overId);
-
-      if (activeIndex === -1) {
-        console.log('Drag Over: ', 'Active Activity not found in its subprocess container');
-        return prevData;
-      }
-
-      const isBelowOverItem =
-        over && active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height;
-      const modifier = isBelowOverItem ? 1 : 0;
-      const newIndex = overIndex >= 0 ? overIndex + modifier : overActivityItems.length;
-
-      const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
-      const newOverActivityItems = [
-        ...overActivityItems.slice(0, newIndex),
-        activeActivity,
-        ...overActivityItems.slice(newIndex, overActivityItems.length),
-      ];
-
       const clonedData = [...prevData];
 
       const newData = clonedData.map((process) => {
@@ -433,31 +435,33 @@ const MyDND = () => {
 
     const overId = over?.id;
     const activeId = active?.id;
+    const activeActivityItems = activeProcessContainer?.activities || [];
+    const overActivityItems = overProcessContainer?.activities || [];
+
+    const activeIndex = activeActivityItems.findIndex((item) => item.id === activeId);
+    const overIndex = overActivityItems.findIndex((item) => item.id === overId);
+
+    if (activeIndex === -1) {
+      console.log(
+        'Drag Over: ',
+        'Active Activity not found in its process container (scope process to process)' + overIndex
+      );
+      return;
+    }
+
+    const isBelowOverItem =
+      over && active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height;
+    const modifier = isBelowOverItem ? 1 : 0;
+    const newIndex = overIndex >= 0 ? overIndex + modifier : overActivityItems.length;
+
+    const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
+    const newOverActivityItems = [
+      ...overActivityItems.slice(0, newIndex),
+      activeActivity,
+      ...overActivityItems.slice(newIndex, overActivityItems.length),
+    ];
 
     setData((prevData) => {
-      const activeActivityItems = activeProcessContainer?.activities || [];
-      const overActivityItems = overProcessContainer?.activities || [];
-
-      const activeIndex = activeActivityItems.findIndex((item) => item.id === activeId);
-      const overIndex = overActivityItems.findIndex((item) => item.id === overId);
-
-      if (activeIndex === -1) {
-        console.log('Drag Over: ', 'Active Activity not found in its process container');
-        return prevData;
-      }
-
-      const isBelowOverItem =
-        over && active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height;
-      const modifier = isBelowOverItem ? 1 : 0;
-      const newIndex = overIndex >= 0 ? overIndex + modifier : overActivityItems.length;
-
-      const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
-      const newOverActivityItems = [
-        ...overActivityItems.slice(0, newIndex),
-        activeActivity,
-        ...overActivityItems.slice(newIndex, overActivityItems.length),
-      ];
-
       const clonedData = [...prevData];
 
       const newData = clonedData.map((process) => {
@@ -486,9 +490,7 @@ const MyDND = () => {
     const overProcessContainer = findProcessContainerByActivityId(over?.id);
     const activeProcessContainer = findProcessContainerByActivityId(active?.id);
 
-    console.log('Test ===>', {
-      active: active.id,
-      over: over.id,
+    console.log('All Container: ', {
       overSubprocessContainer,
       activeSubprocessContainer,
       overProcessContainer,
@@ -664,12 +666,7 @@ const MyDND = () => {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
-      // measuring={{
-      //   droppable: {
-      //     strategy: MeasuringStrategy.Always,
-      //   },
-      // }}
+      collisionDetection={pointerWithin}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDragEnd={onDragEnd}
