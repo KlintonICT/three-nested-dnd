@@ -118,14 +118,6 @@ const MyDND = () => {
     return null;
   };
 
-  const findNewIndex = ({ over, active, overIndex, lastIndex }) => {
-    const isBelowOverItem =
-      over && active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height;
-    const modifier = isBelowOverItem ? 1 : 0;
-
-    return overIndex >= 0 ? overIndex + modifier : lastIndex;
-  };
-
   const findActiveAndOverIndex = ({ active, over, activeList, overList }) => {
     const activeIndex = activeList.findIndex((item) => item.id === active.id);
     const overIndex = overList.findIndex((item) => item.id === over.id);
@@ -134,14 +126,16 @@ const MyDND = () => {
   };
 
   const findActiveAndOverItems = ({ over, active, activeList, overList }) => {
-    const activeIndex = activeList.findIndex((item) => item.id === active.id);
-    const overIndex = overList.findIndex((item) => item.id === over.id);
+    const { activeIndex, overIndex } = findActiveAndOverIndex({ active, over, activeList, overList });
 
     // Cannot find active index means that the container is lost focus
     if (activeIndex === -1) return;
 
     const lastIndex = overList.length;
-    const newIndex = findNewIndex({ over, active, overIndex, lastIndex });
+    const isBelowOverItem =
+      over && active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height;
+    const modifier = isBelowOverItem ? 1 : 0;
+    const newIndex = overIndex >= 0 ? overIndex + modifier : lastIndex;
 
     const [activeItem] = activeList.splice(activeIndex, 1);
     const newOverItems = [...overList.slice(0, newIndex), activeItem, ...overList.slice(newIndex, lastIndex)];
@@ -433,17 +427,15 @@ const MyDND = () => {
   };
 
   const handleDragEndActivity = ({ active, over }) => {
-    const activeId = active?.id;
-    const overId = over?.id;
-    if (overId == null) {
+    if (!over?.id) {
       setActiveActivity(null);
       return;
     }
 
-    const activeSubProcessContainer = findSubProcessContainerByActivityId(activeId);
-    const overSubProcessContainer = findSubProcessContainerByActivityId(overId);
-    const activeProcessContainer = findProcessContainerByActivityId(activeId);
-    const overProcessContainer = findProcessContainerByActivityId(overId);
+    const activeSubProcessContainer = findSubProcessContainerByActivityId(active?.id);
+    const activeProcessContainer = findProcessContainerByActivityId(active?.id);
+    const overSubProcessContainer = findSubProcessContainerByActivityId(over?.id);
+    const overProcessContainer = findProcessContainerByActivityId(over?.id);
 
     if (overSubProcessContainer && activeSubProcessContainer) {
       // Re-order the activity in the same subprocess container
