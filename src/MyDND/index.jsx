@@ -126,75 +126,65 @@ const MyDND = () => {
     return overIndex >= 0 ? overIndex + modifier : lastIndex;
   };
 
-  const handleDragOverSubProcess = ({ active, over }) => {
-    const overId = over?.id;
-    const activeId = active?.id;
+  const findActiveAndOverIndex = ({ active, over, activeList, overList }) => {
+    const activeIndex = activeList.findIndex((item) => item.id === active.id);
+    const overIndex = overList.findIndex((item) => item.id === over.id);
 
-    const overContainer = findProcessContainerBySubProcessId(overId);
-    const activeContainer = findProcessContainerBySubProcessId(activeId);
-
-    if (!overContainer || !activeContainer) {
-      return;
-    }
-
-    if (activeContainer !== overContainer) {
-      const clonedData = [...data];
-      // Find indices of containers in the cloned data
-      const overContainerIndex = clonedData.findIndex((item) => item.id === overContainer.id);
-      const activeContainerIndex = clonedData.findIndex((item) => item.id === activeContainer.id);
-
-      if (overContainerIndex === -1 || activeContainerIndex === -1) {
-        return;
-      }
-
-      // Get references to `subs` for both containers
-      const activeSubProcessItems = clonedData[activeContainerIndex].subs || [];
-      const overSubProcessItems = clonedData[overContainerIndex].subs || [];
-
-      // Find the indices of the active and over subprocesses
-      const activeIndex = activeSubProcessItems.findIndex((item) => item.id === activeId);
-      const overIndex = overSubProcessItems.findIndex((item) => item.id === overId);
-
-      // Active subprocess not found in its container
-      if (activeIndex === -1) {
-        return;
-      }
-
-      const lastIndex = overSubProcessItems.length;
-      const newIndex = findNewIndex({ over, active, overIndex, lastIndex });
-
-      const [activeSubProcess] = activeSubProcessItems.splice(activeIndex, 1);
-      clonedData[overContainerIndex].subs = [
-        ...overSubProcessItems.slice(0, newIndex),
-        activeSubProcess,
-        ...overSubProcessItems.slice(newIndex, lastIndex),
-      ];
-
-      clonedData[activeContainerIndex].subs = activeSubProcessItems;
-
-      setData(clonedData);
-    }
+    return { activeIndex, overIndex };
   };
 
-  const findActivityItems = ({ over, active, activeActivityItems, overActivityItems }) => {
-    const activeIndex = activeActivityItems.findIndex((item) => item.id === active.id);
-    const overIndex = overActivityItems.findIndex((item) => item.id === over.id);
+  const findActiveAndOverItems = ({ over, active, activeList, overList }) => {
+    const activeIndex = activeList.findIndex((item) => item.id === active.id);
+    const overIndex = overList.findIndex((item) => item.id === over.id);
 
-    if (activeIndex === -1) {
-      return;
-    }
+    // Cannot find active index means that the container is lost focus
+    if (activeIndex === -1) return;
 
-    const lastIndex = overActivityItems.length;
+    const lastIndex = overList.length;
     const newIndex = findNewIndex({ over, active, overIndex, lastIndex });
 
-    const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
-    const newOverActivityItems = [
-      ...overActivityItems.slice(0, newIndex),
-      activeActivity,
-      ...overActivityItems.slice(newIndex, lastIndex),
-    ];
+    const [activeItem] = activeList.splice(activeIndex, 1);
+    const newOverItems = [...overList.slice(0, newIndex), activeItem, ...overList.slice(newIndex, lastIndex)];
 
-    return { activeActivityItems, newOverActivityItems };
+    return { activeList, overList: newOverItems };
+  };
+
+  const handleDragOverSubProcess = ({ active, over }) => {
+    const overContainer = findProcessContainerBySubProcessId(over.id);
+    const activeContainer = findProcessContainerBySubProcessId(active.id);
+
+    if (!overContainer || !activeContainer) return;
+
+    // make sure active and over process container is different
+    if (activeContainer.id !== overContainer.id) {
+      const activeAndOverItems = findActiveAndOverItems({
+        over,
+        active,
+        activeList: activeContainer.subs || [],
+        overList: overContainer.subs || [],
+      });
+
+      if (!activeAndOverItems) return;
+
+      const clonedData = [...data];
+      const newData = clonedData.map((process) => {
+        if (process.id === activeContainer.id) {
+          return {
+            ...process,
+            subs: activeAndOverItems.activeList,
+          };
+        }
+        if (process.id === overContainer.id) {
+          return {
+            ...process,
+            subs: activeAndOverItems.overList,
+          };
+        }
+        return process;
+      });
+
+      setData(newData);
+    }
   };
 
   const handleDragOverActivityFromSubProcessToSubProcess = ({
@@ -206,16 +196,18 @@ const MyDND = () => {
     const activeProcessContainerId = active.data.current.processContainerId;
     const overProcessContainerId = over.data.current.processContainerId;
 
-    if (!activeProcessContainerId || !overProcessContainerId) {
-      return;
-    }
+    if (!activeProcessContainerId || !overProcessContainerId) return;
 
+    // make sure active and over subprocess container is different
     if (overSubprocessContainer !== activeSubprocessContainer) {
-      const activeActivityItems = activeSubprocessContainer?.activities || [];
-      const overActivityItems = overSubprocessContainer?.activities || [];
-      const activityItems = findActivityItems({ active, over, activeActivityItems, overActivityItems });
+      const activeOverItems = findActiveAndOverItems({
+        active,
+        over,
+        activeList: activeSubprocessContainer?.activities || [],
+        overList: overSubprocessContainer?.activities || [],
+      });
 
-      if (!activityItems) return;
+      if (!activeOverItems) return;
 
       const clonedData = [...data];
       const newData = clonedData.map((process) => {
@@ -223,7 +215,9 @@ const MyDND = () => {
           process = {
             ...process,
             subs: process.subs.map((sub) =>
-              sub.id === activeSubprocessContainer.id ? { ...sub, activities: activityItems.activeActivityItems } : sub
+              sub.id === activeSubprocessContainer.id
+                ? { ...sub, activities: activeOverItems.activeActivityItems }
+                : sub
             ),
           };
         }
@@ -231,12 +225,13 @@ const MyDND = () => {
           process = {
             ...process,
             subs: process.subs.map((sub) =>
-              sub.id === overSubprocessContainer.id ? { ...sub, activities: activityItems.newOverActivityItems } : sub
+              sub.id === overSubprocessContainer.id ? { ...sub, activities: activeOverItems.newOverActivityItems } : sub
             ),
           };
         }
         return process;
       });
+
       setData(newData);
     }
   };
@@ -248,31 +243,33 @@ const MyDND = () => {
     overSubprocessContainer,
   }) => {
     let overProcessContainerId = over.data.current.processContainerId;
-
     if (!overProcessContainerId) {
       const findOverProcessContainer = findProcessContainerBySubProcessId(overSubprocessContainer.id);
       overProcessContainerId = findOverProcessContainer.id;
     }
 
-    const activeActivityItems = activeProcessContainer?.activities || [];
-    const overActivityItems = overSubprocessContainer?.activities || [];
-    const activityItems = findActivityItems({ active, over, activeActivityItems, overActivityItems });
+    const activeOverItems = findActiveAndOverItems({
+      active,
+      over,
+      activeList: activeProcessContainer?.activities || [],
+      overList: overSubprocessContainer?.activities || [],
+    });
 
-    if (!activityItems) return;
+    if (!activeOverItems) return;
 
     const clonedData = [...data];
     const newData = clonedData.map((process) => {
       if (process.id === activeProcessContainer.id) {
         process = {
           ...process,
-          activities: activityItems.activeActivityItems,
+          activities: activeOverItems.activeList,
         };
       }
       if (process.id === overProcessContainerId) {
         process = {
           ...process,
           subs: process.subs.map((sub) =>
-            sub.id === overSubprocessContainer.id ? { ...sub, activities: activityItems.newOverActivityItems } : sub
+            sub.id === overSubprocessContainer.id ? { ...sub, activities: activeOverItems.overList } : sub
           ),
         };
       }
@@ -289,11 +286,14 @@ const MyDND = () => {
     overProcessContainer,
   }) => {
     const activeProcessContainerId = active.data.current.processContainerId;
-    const activeActivityItems = activeSubprocessContainer?.activities || [];
-    const overActivityItems = overProcessContainer?.activities || [];
-    const activityItems = findActivityItems({ active, over, activeActivityItems, overActivityItems });
+    const activeOverItems = findActiveAndOverItems({
+      active,
+      over,
+      activeList: activeSubprocessContainer?.activities || [],
+      overList: overProcessContainer?.activities || [],
+    });
 
-    if (!activityItems) return;
+    if (!activeOverItems) return;
 
     const clonedData = [...data];
     const newData = clonedData.map((process) => {
@@ -301,14 +301,14 @@ const MyDND = () => {
         process = {
           ...process,
           subs: process.subs.map((sub) =>
-            sub.id === activeSubprocessContainer.id ? { ...sub, activities: activityItems.activeActivityItems } : sub
+            sub.id === activeSubprocessContainer.id ? { ...sub, activities: activeOverItems.activeList } : sub
           ),
         };
       }
       if (process.id === overProcessContainer.id) {
         process = {
           ...process,
-          activities: activityItems.newOverActivityItems,
+          activities: activeOverItems.overList,
         };
       }
       return process;
@@ -323,24 +323,27 @@ const MyDND = () => {
     overProcessContainer,
     activeProcessContainer,
   }) => {
-    const activeActivityItems = activeProcessContainer?.activities || [];
-    const overActivityItems = overProcessContainer?.activities || [];
-    const activityItems = findActivityItems({ active, over, activeActivityItems, overActivityItems });
+    const activeOverItems = findActiveAndOverItems({
+      active,
+      over,
+      activeList: activeProcessContainer?.activities || [],
+      overList: overProcessContainer?.activities || [],
+    });
 
-    if (!activityItems) return;
+    if (!activeOverItems) return;
 
     const clonedData = [...data];
     const newData = clonedData.map((process) => {
       if (process.id === activeProcessContainer.id) {
         process = {
           ...process,
-          activities: activityItems.activeActivityItems,
+          activities: activeOverItems.activeList,
         };
       }
       if (process.id === overProcessContainer.id) {
         process = {
           ...process,
-          activities: activityItems.newOverActivityItems,
+          activities: activeOverItems.overList,
         };
       }
       return process;
@@ -386,7 +389,7 @@ const MyDND = () => {
   };
 
   const onDragOver = ({ active, over }) => {
-    if (over?.id == null || active?.id == null) return;
+    if (!over?.id || !active?.id) return;
 
     if (active.data.current.type === 'subprocess') {
       // Drag the subprocess to drop in different process container
@@ -415,9 +418,7 @@ const MyDND = () => {
       const overContainerIndex = clonedData.findIndex((item) => item.id === overContainer.id);
       const activeContainerIndex = clonedData.findIndex((item) => item.id === activeContainer.id);
 
-      if (overContainerIndex === -1 || activeContainerIndex === -1) {
-        return; // Return the original data to avoid breaking state
-      }
+      if (overContainerIndex === -1 || activeContainerIndex === -1) return;
 
       // Get references to `subs` for both containers
       const activeSubProcessItems = clonedData[activeContainerIndex].subs || [];
@@ -452,12 +453,13 @@ const MyDND = () => {
       // Re-order the activity in the same subprocess container
       const clonedData = [...data];
       const overProcessContainerId = over.data.current.processContainerId;
-
-      const activeActivityItems = activeSubProcessContainer?.activities || [];
       const overActivityItems = overSubProcessContainer?.activities || [];
-
-      const activeIndex = activeActivityItems.findIndex((item) => item.id === activeId);
-      const overIndex = overActivityItems.findIndex((item) => item.id === overId);
+      const { activeIndex, overIndex } = findActiveAndOverIndex({
+        active,
+        over,
+        activeList: activeSubProcessContainer?.activities || [],
+        overList: overActivityItems,
+      });
 
       if (activeIndex !== overIndex) {
         const newData = clonedData.map((process) => {
@@ -483,12 +485,13 @@ const MyDND = () => {
       // Re-order the activity in the same process container
       const clonedData = [...data];
       const overProcessContainerId = overProcessContainer.id;
-
-      const activeActivityItems = activeProcessContainer?.activities || [];
       const overActivityItems = overProcessContainer?.activities || [];
-
-      const activeIndex = activeActivityItems.findIndex((item) => item.id === activeId);
-      const overIndex = overActivityItems.findIndex((item) => item.id === overId);
+      const { activeIndex, overIndex } = findActiveAndOverIndex({
+        active,
+        over,
+        activeList: activeProcessContainer?.activities || [],
+        overList: overActivityItems,
+      });
 
       if (activeIndex !== overIndex) {
         const newData = clonedData.map((process) => {
