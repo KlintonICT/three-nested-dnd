@@ -527,29 +527,22 @@ const MyDND = () => {
     const activeId = active.id;
     const activeContainer = findProcessContainerBySubProcessId(activeId);
 
-    if (!activeContainer) {
+    if (!activeContainer || !over?.id) {
       setActiveSubProcess(null);
       return;
     }
 
     const overId = over?.id;
-
-    if (overId == null) {
-      setActiveSubProcess(null);
-      return;
-    }
-
     const overContainer = findProcessContainerBySubProcessId(overId);
 
     if (overContainer) {
       const clonedData = [...data];
 
-      // Find indices of containers in the cloned data
+      // Find indices of process containers
       const overContainerIndex = clonedData.findIndex((item) => item.id === overContainer.id);
       const activeContainerIndex = clonedData.findIndex((item) => item.id === activeContainer.id);
 
       if (overContainerIndex === -1 || activeContainerIndex === -1) {
-        console.log('Drag End: ', 'Container indices not found');
         return; // Return the original data to avoid breaking state
       }
 
@@ -583,7 +576,7 @@ const MyDND = () => {
     const overProcessContainer = findProcessContainerByActivityId(overId);
 
     if (overSubProcessContainer && activeSubProcessContainer) {
-      // sort activity item under sub process container
+      // Re-order the activity in the same subprocess container
       const clonedData = [...data];
       const overProcessContainerId = over.data.current.processContainerId;
 
@@ -614,7 +607,7 @@ const MyDND = () => {
         setData(newData);
       }
     } else if (activeProcessContainer && overProcessContainer) {
-      // sort activity item under process container
+      // Re-order the activity in the same process container
       const clonedData = [...data];
       const overProcessContainerId = overProcessContainer.id;
 
@@ -642,9 +635,10 @@ const MyDND = () => {
 
   const onDragEnd = ({ active, over }) => {
     if (active.data.current.type === 'subprocess') {
+      // Re-order the subprocess in the same container
       handleDragEndSubProcess({ active, over });
     } else if (active.data.current.type === 'activity') {
-      console.log('Activity Drag End');
+      // Re-order the activity in the same container
       handleDragEndActivity({ active, over });
     }
     setActiveSubProcess(null);
