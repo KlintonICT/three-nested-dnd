@@ -200,24 +200,24 @@ const MyDND = () => {
     const activeId = active?.id;
 
     const activeProcessContainer = active.data.current.processContainerId;
-    let overProcessContainer = over.data.current.processContainerId;
+    let overProcessContainerId = over.data.current.processContainerId;
 
     if (!activeProcessContainer) {
       console.log('Drag Over: ', 'No active process container found');
       return;
     }
 
-    if (!overProcessContainer) {
+    if (!overProcessContainerId) {
       const findOverProcessContainer = findProcessContainerBySubProcessId(overSubprocessContainer.id);
 
       if (!findOverProcessContainer) {
         console.log('Drag Over: ', 'No over process container found');
       }
 
-      overProcessContainer = findOverProcessContainer.id;
+      overProcessContainerId = findOverProcessContainer.id;
     }
 
-    console.log({ activeProcessContainer, overProcessContainer });
+    console.log({ activeProcessContainer, overProcessContainerId });
 
     if (overSubprocessContainer !== activeSubprocessContainer) {
       setData((prevData) => {
@@ -267,7 +267,7 @@ const MyDND = () => {
               ),
             };
           }
-          if (process.id === overProcessContainer) {
+          if (process.id === overProcessContainerId) {
             process = {
               ...process,
               subs: process.subs.map((sub) =>
@@ -298,16 +298,16 @@ const MyDND = () => {
     const overId = over?.id;
     const activeId = active?.id;
 
-    let overProcessContainer = over.data.current.processContainerId;
+    let overProcessContainerId = over.data.current.processContainerId;
 
-    if (!overProcessContainer) {
+    if (!overProcessContainerId) {
       const findOverProcessContainer = findProcessContainerBySubProcessId(overSubprocessContainer.id);
 
       if (!findOverProcessContainer) {
         console.log('Drag Over: ', 'No over process container found');
       }
 
-      overProcessContainer = findOverProcessContainer.id;
+      overProcessContainerId = findOverProcessContainer.id;
     }
 
     const activeActivityItems = activeProcessContainer?.activities || [];
@@ -340,7 +340,7 @@ const MyDND = () => {
       const clonedData = [...prevData];
 
       const newData = clonedData.map((process) => {
-        if (process.id === overProcessContainer) {
+        if (process.id === overProcessContainerId) {
           process = {
             ...process,
             subs: process.subs.map((sub) =>
