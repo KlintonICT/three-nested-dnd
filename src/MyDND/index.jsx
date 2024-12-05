@@ -355,13 +355,6 @@ const MyDND = () => {
     overProcessContainer,
     activeProcessContainer,
   }) => {
-    console.log('Act of Process ==> Process: ', {
-      over,
-      active,
-      overProcessContainer,
-      activeProcessContainer,
-    });
-
     const overId = over?.id;
     const activeId = active?.id;
     const activeActivityItems = activeProcessContainer?.activities || [];
@@ -371,10 +364,6 @@ const MyDND = () => {
     const overIndex = overActivityItems.findIndex((item) => item.id === overId);
 
     if (activeIndex === -1) {
-      console.log(
-        'Drag Over: ',
-        'Active Activity not found in its process container (scope process to process)' + overIndex
-      );
       return;
     }
 
@@ -388,27 +377,24 @@ const MyDND = () => {
       ...overActivityItems.slice(newIndex, lastIndex),
     ];
 
-    setData((prevData) => {
-      const clonedData = [...prevData];
-
-      const newData = clonedData.map((process) => {
-        if (process.id === activeProcessContainer.id) {
-          process = {
-            ...process,
-            activities: activeActivityItems,
-          };
-        }
-        if (process.id === overProcessContainer.id) {
-          process = {
-            ...process,
-            activities: newOverActivityItems,
-          };
-        }
-        return process;
-      });
-
-      return newData;
+    const clonedData = [...data];
+    const newData = clonedData.map((process) => {
+      if (process.id === activeProcessContainer.id) {
+        process = {
+          ...process,
+          activities: activeActivityItems,
+        };
+      }
+      if (process.id === overProcessContainer.id) {
+        process = {
+          ...process,
+          activities: newOverActivityItems,
+        };
+      }
+      return process;
     });
+
+    setData(newData);
   };
 
   const handleDragOverActivity = ({ active, over }) => {
