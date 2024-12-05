@@ -167,7 +167,8 @@ const MyDND = () => {
           return prevData;
         }
 
-        const newIndex = findNewIndex({ over, active, overIndex, lastIndex: overSubProcessItems.length });
+        const lastIndex = overSubProcessItems.length;
+        const newIndex = findNewIndex({ over, active, overIndex, lastIndex });
 
         // Remove the active subprocess from its current container
         const [activeSubProcess] = activeSubProcessItems.splice(activeIndex, 1);
@@ -176,7 +177,7 @@ const MyDND = () => {
         clonedData[overContainerIndex].subs = [
           ...overSubProcessItems.slice(0, newIndex),
           activeSubProcess,
-          ...overSubProcessItems.slice(newIndex, overSubProcessItems.length),
+          ...overSubProcessItems.slice(newIndex, lastIndex),
         ];
 
         // Update the subs of the active container
@@ -239,20 +240,15 @@ const MyDND = () => {
           return prevData;
         }
 
-        const newIndex = findNewIndex({ over, active, overIndex, lastIndex: overActivityItems.length });
+        const lastIndex = overActivityItems.length;
+        const newIndex = findNewIndex({ over, active, overIndex, lastIndex });
 
         const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
         const newOverActivityItems = [
           ...overActivityItems.slice(0, newIndex),
           activeActivity,
-          ...overActivityItems.slice(newIndex, overActivityItems.length),
+          ...overActivityItems.slice(newIndex, lastIndex),
         ];
-
-        console.log({
-          activeActivityItems,
-          activeActivity,
-          newOverActivityItems,
-        });
 
         const clonedData = [...prevData];
 
@@ -322,13 +318,14 @@ const MyDND = () => {
       return;
     }
 
-    const newIndex = findNewIndex({ over, active, overIndex, lastIndex: overActivityItems.length });
+    const lastIndex = overActivityItems.length;
+    const newIndex = findNewIndex({ over, active, overIndex, lastIndex });
 
     const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
     const newOverActivityItems = [
       ...overActivityItems.slice(0, newIndex),
       activeActivity,
-      ...overActivityItems.slice(newIndex, overActivityItems.length),
+      ...overActivityItems.slice(newIndex, lastIndex),
     ];
 
     setData((prevData) => {
@@ -378,13 +375,14 @@ const MyDND = () => {
       return;
     }
 
-    const newIndex = findNewIndex({ over, active, overIndex, lastIndex: overActivityItems.length });
+    const lastIndex = overActivityItems.length;
+    const newIndex = findNewIndex({ over, active, overIndex, lastIndex });
 
     const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
     const newOverActivityItems = [
       ...overActivityItems.slice(0, newIndex),
       activeActivity,
-      ...overActivityItems.slice(newIndex, overActivityItems.length),
+      ...overActivityItems.slice(newIndex, lastIndex),
     ];
 
     setData((prevData) => {
@@ -441,13 +439,14 @@ const MyDND = () => {
       return;
     }
 
-    const newIndex = findNewIndex({ over, active, overIndex, lastIndex: overActivityItems.length });
+    const lastIndex = overActivityItems.length;
+    const newIndex = findNewIndex({ over, active, overIndex, lastIndex });
 
     const [activeActivity] = activeActivityItems.splice(activeIndex, 1);
     const newOverActivityItems = [
       ...overActivityItems.slice(0, newIndex),
       activeActivity,
-      ...overActivityItems.slice(newIndex, overActivityItems.length),
+      ...overActivityItems.slice(newIndex, lastIndex),
     ];
 
     setData((prevData) => {
