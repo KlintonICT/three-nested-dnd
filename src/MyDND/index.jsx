@@ -214,7 +214,6 @@ const MyDND = () => {
       ];
 
       const clonedData = [...data];
-
       const newData = clonedData.map((process) => {
         if (process.id === activeProcessContainerId) {
           process = {
@@ -302,12 +301,6 @@ const MyDND = () => {
     activeSubprocessContainer,
     overProcessContainer,
   }) => {
-    console.log('Act of Sub Process ==> Process: ', {
-      active,
-      over,
-      activeSubprocessContainer,
-      overProcessContainer,
-    });
     const overId = over?.id;
     const activeId = active?.id;
 
@@ -320,7 +313,6 @@ const MyDND = () => {
     const overIndex = overActivityItems.findIndex((item) => item.id === overId);
 
     if (activeIndex === -1) {
-      console.log('Drag Over: ', 'Active Activity not found in its subprocess container (scope sub to process)');
       return;
     }
 
@@ -334,29 +326,27 @@ const MyDND = () => {
       ...overActivityItems.slice(newIndex, lastIndex),
     ];
 
-    setData((prevData) => {
-      const clonedData = [...prevData];
+    const clonedData = [...data];
 
-      const newData = clonedData.map((process) => {
-        if (process.id === activeProcessContainerId) {
-          process = {
-            ...process,
-            subs: process.subs.map((sub) =>
-              sub.id === activeSubprocessContainer.id ? { ...sub, activities: activeActivityItems } : sub
-            ),
-          };
-        }
-        if (process.id === overProcessContainer.id) {
-          process = {
-            ...process,
-            activities: newOverActivityItems,
-          };
-        }
-        return process;
-      });
-
-      return newData;
+    const newData = clonedData.map((process) => {
+      if (process.id === activeProcessContainerId) {
+        process = {
+          ...process,
+          subs: process.subs.map((sub) =>
+            sub.id === activeSubprocessContainer.id ? { ...sub, activities: activeActivityItems } : sub
+          ),
+        };
+      }
+      if (process.id === overProcessContainer.id) {
+        process = {
+          ...process,
+          activities: newOverActivityItems,
+        };
+      }
+      return process;
     });
+
+    setData(newData);
   };
 
   const handleDragOverActivityFromProcessToProcess = ({
