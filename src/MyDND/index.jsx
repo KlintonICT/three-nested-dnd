@@ -18,10 +18,10 @@ import {
 
 import { initData } from './data';
 
-import ActivityItem from './ActivityItem';
 import ProcessDroppableContainer from './ProcessDroppableContainer';
 import SubProcessDraggableItem from './SubProcessDraggableItem';
 import SubProcessDroppableContainer from './SubProcessDroppableContainer';
+import ActivityTable from './ActivityTable';
 
 const MyDND = () => {
   const [data, setData] = useState(initData);
@@ -186,9 +186,7 @@ const MyDND = () => {
           process = {
             ...process,
             subs: process.subs.map((sub) =>
-              sub.id === activeSubprocessContainer.id
-                ? { ...sub, activities: activeOverItems.activeList }
-                : sub
+              sub.id === activeSubprocessContainer.id ? { ...sub, activities: activeOverItems.activeList } : sub
             ),
           };
         }
@@ -494,24 +492,17 @@ const MyDND = () => {
           <ProcessDroppableContainer key={process.id} processId={process.id}>
             <h1 className='font-bold text-white text-xl'>{process.name}</h1>
 
-            <table className='w-full'>
-              <thead>
-                <tr className='text-white text-sm font-semibold bg-[#1B2150]'>
-                  <th className='text-left w-1/2 p-3'>ID</th>
-                  <th className='text-left'>Name</th>
-                </tr>
-              </thead>
-
+            <ActivityTable>
               <SortableContext strategy={verticalListSortingStrategy} items={process.activities?.map((a) => a.id)}>
                 {process?.activities?.length > 0 && (
-                  <tbody>
+                  <ActivityTable.Body>
                     {process.activities?.map((activity) => (
-                      <ActivityItem key={activity?.id} data={activity} />
+                      <ActivityTable.RowItem key={activity?.id} data={activity} />
                     ))}
-                  </tbody>
+                  </ActivityTable.Body>
                 )}
               </SortableContext>
-            </table>
+            </ActivityTable>
 
             <SortableContext strategy={verticalListSortingStrategy} items={process?.subs?.map((s) => s.id)}>
               <div className='flex flex-col gap-3 mt-3'>
@@ -520,22 +511,15 @@ const MyDND = () => {
                     <SubProcessDroppableContainer subprocessId={s.id}>
                       <h2 className='text-lg font-semibold text-white'>{s.name}</h2>
 
-                      <table className='w-full'>
-                        <thead>
-                          <tr className='text-white text-sm font-semibold bg-[#1B2150]'>
-                            <th className='text-left w-1/2 p-3'>ID</th>
-                            <th className='text-left'>Name</th>
-                          </tr>
-                        </thead>
-
+                      <ActivityTable>
                         <SortableContext strategy={verticalListSortingStrategy} items={s.activities.map((a) => a.id)}>
-                          <tbody>
+                          <ActivityTable.Body>
                             {s.activities?.map((activity) => (
-                              <ActivityItem key={activity?.id} data={activity} processId={process.id} />
+                              <ActivityTable.RowItem key={activity?.id} data={activity} processId={process.id} />
                             ))}
-                          </tbody>
+                          </ActivityTable.Body>
                         </SortableContext>
-                      </table>
+                      </ActivityTable>
                     </SubProcessDroppableContainer>
                   </SubProcessDraggableItem>
                 ))}
@@ -551,27 +535,21 @@ const MyDND = () => {
             <SubProcessDroppableContainer subprocessId={activeSubProcess.id}>
               <h2 className='text-lg font-semibold text-white'>{activeSubProcess.name}</h2>
 
-              <table className='w-full'>
-                <thead>
-                  <tr className='text-white text-sm font-semibold bg-[#1B2150]'>
-                    <th className='text-left w-1/2 p-3'>ID</th>
-                    <th className='text-left'>Name</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <ActivityTable>
+                <ActivityTable.Body>
                   {activeSubProcess.activities?.map((activity) => (
-                    <ActivityItem key={activity?.id} data={activity} />
+                    <ActivityTable.RowItem key={activity?.id} data={activity} />
                   ))}
-                </tbody>
-              </table>
+                </ActivityTable.Body>
+              </ActivityTable>
             </SubProcessDroppableContainer>
           </SubProcessDraggableItem>
         ) : null}
         {activeActivity ? (
           <table className='w-full'>
-            <tbody>
-              <ActivityItem data={activeActivity} />
-            </tbody>
+            <ActivityTable.Body>
+              <ActivityTable.RowItem data={activeActivity} />
+            </ActivityTable.Body>
           </table>
         ) : null}
       </DragOverlay>

@@ -1,7 +1,21 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-const ActivityItem = ({ data, processId }) => {
+const Table = ({ children }) => (
+  <table className='w-full'>
+    {children}
+    <thead>
+      <tr className='text-white text-sm font-semibold bg-[#1B2150]'>
+        <th className='text-left w-1/2 p-3'>ID</th>
+        <th className='text-left'>Name</th>
+      </tr>
+    </thead>
+  </table>
+);
+
+const Body = ({ children }) => <tbody>{children}</tbody>;
+
+const RowItem = ({ data, processId }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: data?.id,
     data: { type: 'activity', processContainerId: processId },
@@ -25,4 +39,5 @@ const ActivityItem = ({ data, processId }) => {
   );
 };
 
-export default ActivityItem;
+const ActivityTable = Object.assign(Table, { Body, RowItem });
+export default ActivityTable;
