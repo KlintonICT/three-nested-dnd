@@ -104,7 +104,7 @@ const MyDND = () => {
 
   const findActiveAndOverIndex = ({ active, over, activeList, overList }) => {
     const activeIndex = activeList.findIndex((item) => item.id === active.id);
-    const overIndex = overList.findIndex((item) => item.id === over.id);
+    const overIndex = overList.findIndex((item) => item.id === over?.id);
 
     return { activeIndex, overIndex };
   };
@@ -125,7 +125,7 @@ const MyDND = () => {
   };
 
   const handleDragOverSubProcessFromProcessToProcess = ({ active, over }) => {
-    const overContainer = findProcessContainerBySubProcessId(over.id);
+    const overContainer = findProcessContainerBySubProcessId(over?.id);
     const activeContainer = findProcessContainerBySubProcessId(active.id);
 
     if (!overContainer || !activeContainer) return;
@@ -187,7 +187,7 @@ const MyDND = () => {
             ...process,
             subs: process.subs.map((sub) =>
               sub.id === activeSubprocessContainer.id
-                ? { ...sub, activities: activeOverItems.activeActivityItems }
+                ? { ...sub, activities: activeOverItems.activeList }
                 : sub
             ),
           };
@@ -196,7 +196,7 @@ const MyDND = () => {
           process = {
             ...process,
             subs: process.subs.map((sub) =>
-              sub.id === overSubprocessContainer.id ? { ...sub, activities: activeOverItems.newOverActivityItems } : sub
+              sub.id === overSubprocessContainer.id ? { ...sub, activities: activeOverItems.overList } : sub
             ),
           };
         }
@@ -366,7 +366,7 @@ const MyDND = () => {
 
   const handleDragEndSubProcess = ({ active, over }) => {
     const activeContainer = findProcessContainerBySubProcessId(active.id);
-    const overContainer = findProcessContainerBySubProcessId(over.id);
+    const overContainer = findProcessContainerBySubProcessId(over?.id);
 
     if (!activeContainer || !overContainer) {
       setActiveSubProcess(null);
