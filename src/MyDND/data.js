@@ -2,7 +2,7 @@ export const initData = [
   {
     id: "single",
     name: "Single Activities",
-    activities: [{ id: "a1", name: "Activity 1" }],
+    activities: [{ id: "a1", name: "Activity 1" }, { id: "a11", name: "Activity 11" }],
     subs: [],
   },
   {
