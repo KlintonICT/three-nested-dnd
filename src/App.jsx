@@ -4,7 +4,7 @@ import MyDND from "./MyDND";
 
 const App = () => {
   return (
-    <div className="bg-[#21265F]">
+    <div className="bg-[#21265F] min-h-screen">
       <MyDND />
       {/* <MultipleContainers /> */}
       {/* <ThreeNestedDND /> */}
