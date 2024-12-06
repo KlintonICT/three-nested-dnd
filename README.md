@@ -17,7 +17,7 @@ This project implements a three-layer nested drag-and-drop system using the powe
 - **Drag and Drop Across Layers**:
   - **Items** can be moved between **SubProcesses** and across **Processes**.
   - **SubProcesses** containing **Items** can be moved across **Processes** while preserving their contained **Items**.
-  - *Note (Additional Condition)*: **SubProcesses** cannot move to the first **Processes**
+  - *Note (Additional Condition)*: **SubProcesses** cannot move to the first **Single Process**
 
 - Built with modern tools:
   - **Vite** for fast and efficient development.
