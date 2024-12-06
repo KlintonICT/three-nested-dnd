@@ -5,7 +5,7 @@ const Table = ({ children }) => (
   <table className='w-full'>
     {children}
     <thead>
-      <tr className='text-white text-sm font-semibold bg-[#1B2150]'>
+      <tr className='text-[#ABB2BF] text-sm font-semibold bg-[#1E222A]'>
         <th className='text-left w-1/2 p-3'>ID</th>
         <th className='text-left'>Name</th>
       </tr>
@@ -31,7 +31,7 @@ const RowItem = ({ data, processId }) => {
         transition,
         opacity: isDragging ? 0.2 : 1,
       }}
-      className='bg-[#232A67] text-sm text-white cursor-grab'
+      className='bg-[#2C313A] text-sm text-[#ABB2BF] cursor-grab'
     >
       <td className='p-3 w-1/2'>{data?.id}</td>
       <td>{data?.name}</td>

@@ -1,7 +1,7 @@
 import MyDND from './MyDND';
 
 const App = () => (
-  <div className='bg-[#21265F] min-h-screen'>
+  <div className='bg-[#282C34] min-h-screen'>
     <MyDND />
   </div>
 );

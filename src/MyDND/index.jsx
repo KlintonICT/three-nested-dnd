@@ -482,7 +482,7 @@ const MyDND = () => {
       <div className='p-8 flex flex-col gap-3'>
         {data.map((process) => (
           <ProcessDroppableContainer key={process.id} processId={process.id}>
-            <h1 className='font-bold text-white text-xl'>{process.name}</h1>
+            <h1 className='font-bold text-[#ABB2BF] text-xl'>{process.name}</h1>
 
             <ActivityTable>
               <SortableContext strategy={verticalListSortingStrategy} items={process.activities?.map((a) => a.id)}>
@@ -501,7 +501,7 @@ const MyDND = () => {
                 {process?.subs?.map((s) => (
                   <SubProcessDraggableItem subprocessId={s.id} key={s.id}>
                     <SubProcessDroppableContainer subprocessId={s.id}>
-                      <h2 className='text-lg font-semibold text-white'>{s.name}</h2>
+                      <h2 className='text-lg font-semibold text-[#ABB2BF]'>{s.name}</h2>
 
                       <ActivityTable>
                         <SortableContext strategy={verticalListSortingStrategy} items={s.activities.map((a) => a.id)}>
@@ -525,7 +525,7 @@ const MyDND = () => {
         {activeSubProcess ? (
           <SubProcessDraggableItem subprocessId={activeSubProcess.id}>
             <SubProcessDroppableContainer subprocessId={activeSubProcess.id}>
-              <h2 className='text-lg font-semibold text-white'>{activeSubProcess.name}</h2>
+              <h2 className='text-lg font-semibold text-[#ABB2BF]'>{activeSubProcess.name}</h2>
 
               <ActivityTable>
                 <ActivityTable.Body>

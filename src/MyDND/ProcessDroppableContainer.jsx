@@ -9,7 +9,7 @@ const SubProcessDraggableItem = ({ processId, children }) => {
   return (
     <div
       ref={setNodeRef}
-      className="border border-[#29327A] p-4 bg-[#17204A] rounded"
+      className="border border-[#3A3F4B] p-4 bg-[#181A1F] rounded-md"
     >
       {children}
     </div>

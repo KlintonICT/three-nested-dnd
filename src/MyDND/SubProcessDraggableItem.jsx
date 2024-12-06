@@ -28,7 +28,7 @@ const DraggableSubProcessItem = ({ subprocessId, children }) => {
       {...attributes}
       {...listeners}
       style={style}
-      className="border border-[#29327A] rounded cursor-grab bg-[#17204A]"
+      className="border border-[#3A3F4B] rounded-md cursor-grab bg-[#181A1F]"
     >
       {children}
     </div>
