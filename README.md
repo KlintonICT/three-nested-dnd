@@ -6,6 +6,12 @@ This project implements a three-layer nested drag-and-drop system using the powe
 2. **SubProcess**
 3. **Item**
 
+![Project Screenshot](screenshot.png)
+
+> *Above: A preview of the drag-and-drop interface showcasing Processes, SubProcesses, and Items in action.*
+
+---
+
 ### Key Features
 
 - **Drag and Drop Across Layers**:
@@ -49,3 +55,12 @@ Ensure you have the following installed:
 ```
 
 4. Open your browser and navigate to http://localhost:5173 (default Vite port).
+
+---
+## Technologies Used
+
+- **[@dnd-kit](https://dndkit.com/)**: For implementing drag-and-drop interactions.
+- **React**: For building the user interface.
+- **Vite**: For bundling and running the development server.
+- **bun**: For efficient dependency management and scripting.
+- **[Tailwind CSS](https://tailwindcss.com/)**: For styling the interface with a utility-first CSS framework.
