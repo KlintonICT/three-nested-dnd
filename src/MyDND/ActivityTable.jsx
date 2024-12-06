@@ -29,7 +29,7 @@ const RowItem = ({ data, processId }) => {
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
-        opacity: isDragging ? 0.2 : 1,
+        opacity: isDragging ? 0.3 : 1,
       }}
       className='bg-[#2C313A] text-sm text-[#ABB2BF] cursor-grab'
     >

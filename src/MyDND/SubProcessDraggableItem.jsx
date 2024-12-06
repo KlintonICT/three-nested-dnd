@@ -19,7 +19,7 @@ const DraggableSubProcessItem = ({ subprocessId, children }) => {
   const style = {
     transition,
     transform: CSS.Transform.toString(transform),
-    opacity: isDragging ? 0.2 : 1,
+    opacity: isDragging ? 0.5 : 1,
   };
 
   return (
