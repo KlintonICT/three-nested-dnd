@@ -1,8 +1,51 @@
-# React + Vite
+# Three-Layer Nested Drag and Drop with @dnd-kit
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project implements a three-layer nested drag-and-drop system using the powerful [@dnd-kit](https://dndkit.com/) library. The layers are structured as follows:
 
-Currently, two official plugins are available:
+1. **Process**
+2. **SubProcess**
+3. **Item**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Key Features
+
+- **Drag and Drop Across Layers**:
+  - **Items** can be moved between **SubProcesses** and across **Processes**.
+  - **SubProcesses** containing **Items** can be moved across **Processes** while preserving their contained **Items**.
+  - *Note (Additional Condition)*: **SubProcesses** cannot move to the first **Processes**
+
+- Built with modern tools:
+  - **Vite** for fast and efficient development.
+  - **React** for the UI components.
+  - **bun** for dependency management and running the project.
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+Ensure you have the following installed:
+
+- [bun](https://bun.sh/) - A modern JavaScript runtime (used to manage and run the project).
+- Node.js (optional but recommended).
+- Git.
+
+### Installation
+
+1. Clone the repository:
+```bash
+  git clone <repository-url>
+  cd <project-directory>
+```
+
+2. Install dependencies using bun:
+```bash
+  bun install
+```
+
+3.Start the development server:
+```bash
+  bun dev
+```
+
+4. Open your browser and navigate to http://localhost:5173 (default Vite port).
