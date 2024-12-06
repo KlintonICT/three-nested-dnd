@@ -1,15 +1,9 @@
-// import MultipleContainers from "./MultipleContainer";
-import MyDND from "./MyDND";
-// import ThreeNestedDND from "./ThreeNestedDnd";
+import MyDND from './MyDND';
 
-const App = () => {
-  return (
-    <div className="bg-[#21265F] min-h-screen">
-      <MyDND />
-      {/* <MultipleContainers /> */}
-      {/* <ThreeNestedDND /> */}
-    </div>
-  );
-};
+const App = () => (
+  <div className='bg-[#21265F] min-h-screen'>
+    <MyDND />
+  </div>
+);
 
 export default App;
