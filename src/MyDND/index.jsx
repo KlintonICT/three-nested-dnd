@@ -18,6 +18,7 @@ import {
 
 import { initData } from './data';
 
+import ProcessDraggableItem from './ProcessDraggableItem';
 import ProcessDroppableContainer from './ProcessDroppableContainer';
 import SubProcessDraggableItem from './SubProcessDraggableItem';
 import SubProcessDroppableContainer from './SubProcessDroppableContainer';
@@ -25,8 +26,9 @@ import ActivityTable from './ActivityTable';
 
 const MyDND = () => {
   const [data, setData] = useState(initData);
-  const [activeSubProcess, setActiveSubProcess] = useState();
   const [activeActivity, setActiveActivity] = useState();
+  const [activeSubProcess, setActiveSubProcess] = useState();
+  const [activeProcess, setActiveProcess] = useState();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -59,10 +61,14 @@ const MyDND = () => {
           }
         }
       }
+    } else if (activeType === 'process') {
+      const _activeProcess = data.find((process) => process.id === active.id);
+      setActiveProcess(_activeProcess);
     }
   };
 
   const onDragCancel = () => {
+    setActiveProcess(null);
     setActiveSubProcess(null);
     setActiveActivity(null);
   };
@@ -459,15 +465,27 @@ const MyDND = () => {
   };
 
   const onDragEnd = ({ active, over }) => {
-    if (active.data.current.type === 'subprocess') {
-      // Re-order the subprocess in the same container
-      handleDragEndSubProcess({ active, over });
-    } else if (active.data.current.type === 'activity') {
-      // Re-order the activity in the same container
-      handleDragEndActivity({ active, over });
-    }
+    setActiveProcess(null);
     setActiveSubProcess(null);
     setActiveActivity(null);
+
+    const activeType = active.data.current.type;
+
+    if (activeType === 'subprocess') {
+      // Re-order the subprocess in the same container
+      handleDragEndSubProcess({ active, over });
+    } else if (activeType === 'activity') {
+      // Re-order the activity in the same container
+      handleDragEndActivity({ active, over });
+    } else if (activeType === 'process') {
+      // Re-order the process
+      const { activeIndex, overIndex } = findActiveAndOverIndex({ active, over, activeList: data, overList: data });
+
+      if (activeIndex !== overIndex) {
+        const newData = arrayMove(data, activeIndex, overIndex);
+        setData(newData);
+      }
+    }
   };
 
   return (
@@ -479,50 +497,93 @@ const MyDND = () => {
       onDragEnd={onDragEnd}
       onDragCancel={onDragCancel}
     >
-      <div className='p-8 flex flex-col gap-3'>
-        {data.map((process) => (
-          <ProcessDroppableContainer key={process.id} processId={process.id}>
-            <h1 className='font-bold text-[#ABB2BF] text-xl'>{process.name}</h1>
+      <SortableContext strategy={verticalListSortingStrategy} items={data?.map((p) => p.id)}>
+        <div className='p-8 flex flex-col gap-3'>
+          {data.map((process) => (
+            <ProcessDraggableItem key={process.id} processId={process.id}>
+              <ProcessDroppableContainer processId={process.id}>
+                <h1 className='font-bold text-[#ABB2BF] text-xl'>{process.name}</h1>
 
-            <ActivityTable>
-              <SortableContext strategy={verticalListSortingStrategy} items={process.activities?.map((a) => a.id)}>
-                {process?.activities?.length > 0 && (
+                <ActivityTable>
+                  <SortableContext strategy={verticalListSortingStrategy} items={process.activities?.map((a) => a.id)}>
+                    {process?.activities?.length > 0 && (
+                      <ActivityTable.Body>
+                        {process.activities?.map((activity) => (
+                          <ActivityTable.RowItem key={activity?.id} data={activity} />
+                        ))}
+                      </ActivityTable.Body>
+                    )}
+                  </SortableContext>
+                </ActivityTable>
+
+                <SortableContext strategy={verticalListSortingStrategy} items={process?.subs?.map((s) => s.id)}>
+                  <div className='flex flex-col gap-3 mt-3'>
+                    {process?.subs?.map((s) => (
+                      <SubProcessDraggableItem subprocessId={s.id} key={s.id}>
+                        <SubProcessDroppableContainer subprocessId={s.id}>
+                          <h2 className='text-lg font-semibold text-[#ABB2BF]'>{s.name}</h2>
+
+                          <ActivityTable>
+                            <SortableContext
+                              strategy={verticalListSortingStrategy}
+                              items={s.activities.map((a) => a.id)}
+                            >
+                              <ActivityTable.Body>
+                                {s.activities?.map((activity) => (
+                                  <ActivityTable.RowItem key={activity?.id} data={activity} processId={process.id} />
+                                ))}
+                              </ActivityTable.Body>
+                            </SortableContext>
+                          </ActivityTable>
+                        </SubProcessDroppableContainer>
+                      </SubProcessDraggableItem>
+                    ))}
+                  </div>
+                </SortableContext>
+              </ProcessDroppableContainer>
+            </ProcessDraggableItem>
+          ))}
+        </div>
+      </SortableContext>
+
+      <DragOverlay>
+        {activeProcess && (
+          <ProcessDraggableItem processId={activeProcess.id}>
+            <ProcessDroppableContainer processId={activeProcess.id}>
+              <h1 className='font-bold text-[#ABB2BF] text-xl'>{activeProcess.name}</h1>
+
+              <ActivityTable>
+                {activeProcess?.activities?.length > 0 && (
                   <ActivityTable.Body>
-                    {process.activities?.map((activity) => (
+                    {activeProcess.activities?.map((activity) => (
                       <ActivityTable.RowItem key={activity?.id} data={activity} />
                     ))}
                   </ActivityTable.Body>
                 )}
-              </SortableContext>
-            </ActivityTable>
+              </ActivityTable>
 
-            <SortableContext strategy={verticalListSortingStrategy} items={process?.subs?.map((s) => s.id)}>
               <div className='flex flex-col gap-3 mt-3'>
-                {process?.subs?.map((s) => (
+                {activeProcess?.subs?.map((s) => (
                   <SubProcessDraggableItem subprocessId={s.id} key={s.id}>
                     <SubProcessDroppableContainer subprocessId={s.id}>
                       <h2 className='text-lg font-semibold text-[#ABB2BF]'>{s.name}</h2>
 
                       <ActivityTable>
-                        <SortableContext strategy={verticalListSortingStrategy} items={s.activities.map((a) => a.id)}>
-                          <ActivityTable.Body>
-                            {s.activities?.map((activity) => (
-                              <ActivityTable.RowItem key={activity?.id} data={activity} processId={process.id} />
-                            ))}
-                          </ActivityTable.Body>
-                        </SortableContext>
+                        <ActivityTable.Body>
+                          {s.activities?.map((activity) => (
+                            <ActivityTable.RowItem key={activity?.id} data={activity} processId={activeProcess.id} />
+                          ))}
+                        </ActivityTable.Body>
                       </ActivityTable>
                     </SubProcessDroppableContainer>
                   </SubProcessDraggableItem>
                 ))}
               </div>
-            </SortableContext>
-          </ProcessDroppableContainer>
-        ))}
-      </div>
+            </ProcessDroppableContainer>
+          </ProcessDraggableItem>
+        )}
 
-      <DragOverlay>
-        {activeSubProcess ? (
+        {activeSubProcess && (
           <SubProcessDraggableItem subprocessId={activeSubProcess.id}>
             <SubProcessDroppableContainer subprocessId={activeSubProcess.id}>
               <h2 className='text-lg font-semibold text-[#ABB2BF]'>{activeSubProcess.name}</h2>
@@ -536,14 +597,15 @@ const MyDND = () => {
               </ActivityTable>
             </SubProcessDroppableContainer>
           </SubProcessDraggableItem>
-        ) : null}
-        {activeActivity ? (
+        )}
+
+        {activeActivity && (
           <table className='w-full'>
             <ActivityTable.Body>
               <ActivityTable.RowItem data={activeActivity} />
             </ActivityTable.Body>
           </table>
-        ) : null}
+        )}
       </DragOverlay>
     </DndContext>
   );
