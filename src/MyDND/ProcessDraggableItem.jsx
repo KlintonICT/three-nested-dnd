@@ -17,8 +17,9 @@ const ProcessDraggableItem = ({ processId, children }) => {
   };
   const classes = 'border border-[#3A3F4B] bg-[#181A1F] rounded-md';
 
+  // case for single process that not allow to move
   if (processId === 'single') {
-    return <div className={classes}>{children}</div>;
+    return <div ref={setNodeRef} className={classes}>{children}</div>;
   }
 
   return (

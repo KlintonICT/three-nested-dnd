@@ -1,6 +1,6 @@
 import { useDroppable } from '@dnd-kit/core';
 
-const SubProcessDraggableItem = ({ processId, children }) => {
+const ProcessDroppableContainer = ({ processId, children }) => {
   const { setNodeRef } = useDroppable({ id: processId });
 
   return (
@@ -10,4 +10,4 @@ const SubProcessDraggableItem = ({ processId, children }) => {
   );
 };
 
-export default SubProcessDraggableItem;
+export default ProcessDroppableContainer;

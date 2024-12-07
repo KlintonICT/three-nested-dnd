@@ -39,5 +39,5 @@ const RowItem = ({ data, processId }) => {
   );
 };
 
-const ActivityTable = Object.assign(Table, { Body, RowItem });
-export default ActivityTable;
+const TableComponent = Object.assign(Table, { Body, RowItem });
+export default TableComponent;
