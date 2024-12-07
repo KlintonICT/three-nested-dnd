@@ -1,7 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-const DraggableSubProcessItem = ({ subprocessId, children }) => {
+const SubProcessDraggableItem = ({ subprocessId, children }) => {
   const {
     setNodeRef,
     attributes,
@@ -19,7 +19,7 @@ const DraggableSubProcessItem = ({ subprocessId, children }) => {
   const style = {
     transition,
     transform: CSS.Transform.toString(transform),
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.3 : 1,
   };
 
   return (
@@ -35,4 +35,4 @@ const DraggableSubProcessItem = ({ subprocessId, children }) => {
   );
 };
 
-export default DraggableSubProcessItem;
+export default SubProcessDraggableItem;
