@@ -1,16 +1,10 @@
-import { useDroppable } from "@dnd-kit/core";
+import { useDroppable } from '@dnd-kit/core';
 
 const SubProcessDraggableItem = ({ processId, children }) => {
-  const { setNodeRef } = useDroppable({
-    id: processId,
-    data: { accepts: "subprocessAndActivity" },
-  });
+  const { setNodeRef } = useDroppable({ id: processId });
 
   return (
-    <div
-      ref={setNodeRef}
-      className="border border-[#3A3F4B] p-4 bg-[#181A1F] rounded-md"
-    >
+    <div ref={setNodeRef} className='border border-[#3A3F4B] p-4 bg-[#181A1F] rounded-md'>
       {children}
     </div>
   );
