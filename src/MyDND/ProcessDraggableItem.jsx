@@ -8,6 +8,7 @@ const ProcessDraggableItem = ({ processId, children }) => {
     data: {
       type: 'process',
     },
+    disabled: processId === 'single',
   });
 
   const style = {

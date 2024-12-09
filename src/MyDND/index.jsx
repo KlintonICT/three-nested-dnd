@@ -518,6 +518,9 @@ const MyDND = () => {
       // Re-order the process
       const { activeIndex, overIndex } = findActiveAndOverIndex({ active, over, activeList: data, overList: data });
 
+      // prevent re-order the single process
+      if (activeIndex <= 0 || overIndex <= 0) return;
+
       if (activeIndex !== overIndex) {
         const newData = arrayMove(data, activeIndex, overIndex);
         setData(newData);
