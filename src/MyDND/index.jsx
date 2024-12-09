@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -15,6 +15,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import clsx from 'clsx';
 
 import ProcessDraggableItem from './ProcessDraggableItem';
 import ProcessDroppableContainer from './ProcessDroppableContainer';
@@ -63,9 +64,16 @@ const ProcessItem = ({ process }) => (
 
 const MyDND = () => {
   const [data, setData] = useState(initData);
+  const [clonedData, setClonedData] = useState(structuredClone(initData));
+  const [isOrderChanged, setIsOrderChanged] = useState(false);
+
   const [activeActivity, setActiveActivity] = useState();
   const [activeSubProcess, setActiveSubProcess] = useState();
   const [activeProcess, setActiveProcess] = useState();
+
+  useEffect(() => {
+    setIsOrderChanged(JSON.stringify(clonedData) !== JSON.stringify(data));
+  }, [clonedData, data]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -528,35 +536,64 @@ const MyDND = () => {
     }
   };
 
-  return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={pointerWithin}
-      onDragStart={onDragStart}
-      onDragOver={onDragOver}
-      onDragEnd={onDragEnd}
-      onDragCancel={onDragCancel}
-    >
-      <SortableContext strategy={verticalListSortingStrategy} items={data?.map((p) => p.id)}>
-        <div className='p-8 flex flex-col gap-3'>
-          {data.map((process) => (
-            <ProcessItem key={process.id} process={process} />
-          ))}
-        </div>
-      </SortableContext>
+  const handleConfirmDragging = () => {
+    setClonedData(structuredClone(data));
+    setIsOrderChanged(false);
+  };
 
-      <DragOverlay>
-        {activeProcess && <ProcessItem process={activeProcess} />}
-        {activeSubProcess && <SubProcessItem subprocess={activeSubProcess} />}
-        {activeActivity && (
-          <table className='w-full'>
-            <Table.Body>
-              <Table.RowItem data={activeActivity} />
-            </Table.Body>
-          </table>
-        )}
-      </DragOverlay>
-    </DndContext>
+  const handleUndoDragging = () => {
+    setData(structuredClone(clonedData));
+    setIsOrderChanged(false);
+  };
+
+  return (
+    <>
+      <div className='px-8 py-4 flex gap-4'>
+        <button
+          className={clsx('text-white p-3 rounded bg-red-700', !isOrderChanged && 'opacity-35')}
+          disabled={!isOrderChanged}
+          onClick={handleUndoDragging}
+        >
+          Undo the dragging
+        </button>
+        <button
+          className={clsx('text-white p-3 rounded bg-green-700', !isOrderChanged && 'opacity-35')}
+          disabled={!isOrderChanged}
+          onClick={handleConfirmDragging}
+        >
+          Confirm the dragging
+        </button>
+      </div>
+
+      <DndContext
+        sensors={sensors}
+        collisionDetection={pointerWithin}
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDragEnd={onDragEnd}
+        onDragCancel={onDragCancel}
+      >
+        <SortableContext strategy={verticalListSortingStrategy} items={data?.map((p) => p.id)}>
+          <div className='px-8 flex flex-col gap-3'>
+            {data.map((process) => (
+              <ProcessItem key={process.id} process={process} />
+            ))}
+          </div>
+        </SortableContext>
+
+        <DragOverlay>
+          {activeProcess && <ProcessItem process={activeProcess} />}
+          {activeSubProcess && <SubProcessItem subprocess={activeSubProcess} />}
+          {activeActivity && (
+            <table className='w-full'>
+              <Table.Body>
+                <Table.RowItem data={activeActivity} />
+              </Table.Body>
+            </table>
+          )}
+        </DragOverlay>
+      </DndContext>
+    </>
   );
 };
 
