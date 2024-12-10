@@ -3,13 +3,13 @@ import { CSS } from '@dnd-kit/utilities';
 
 const Table = ({ children }) => (
   <table className='w-full'>
-    {children}
     <thead>
       <tr className='text-[#ABB2BF] text-sm font-semibold bg-[#1E222A]'>
         <th className='text-left w-1/2 p-3'>ID</th>
         <th className='text-left'>Name</th>
       </tr>
     </thead>
+    {children}
   </table>
 );
 
